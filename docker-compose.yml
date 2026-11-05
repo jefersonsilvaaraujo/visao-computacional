@@ -1,0 +1,51 @@
+# Sistema de Visão Computacional com IA Local
+# Uso: veja o README.md (ou rode os scripts 1-preparar / 2-iniciar / 3-parar).
+name: visao-computacional
+
+services:
+  ollama:
+    image: ollama/ollama:${OLLAMA_VERSAO:-0.6.8}
+    restart: unless-stopped
+    environment:
+      OLLAMA_KEEP_ALIVE: "-1"        # mantém a LLM carregada (latência baixa)
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+    volumes:
+      - modelos_ollama:/root/.ollama
+    # RNF06: nenhuma porta publicada. O Ollama só é acessível pela rede
+    # interna do Docker (pelo serviço "app"), nunca pela rede do evento.
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app:
+    build:
+      context: ./app
+      args:
+        MODELO_YOLO: ${MODELO_YOLO:-yolo11n}
+    image: visao-computacional-app:1.0
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      LLM_MODELO: ${LLM_MODELO:-llama3.2:3b}
+      MONITOR_PIN: ${MONITOR_PIN:-2026}
+      BAIXAR_MODELO_AUTOMATICAMENTE: "1"
+      THREADS_DETECTOR: ${THREADS_DETECTOR:-0}
+      LLM_THREADS: ${LLM_THREADS:-0}
+      TZ: ${FUSO_HORARIO:-America/Sao_Paulo}
+    volumes:
+      - dados_app:/app/dados
+      - logs_app:/app/logs
+    ports:
+      # RNF06: publicado apenas em 127.0.0.1 (o próprio notebook).
+      - "127.0.0.1:${PORTA:-8080}:8000"
+
+volumes:
+  modelos_ollama:
+  dados_app:
+  logs_app:

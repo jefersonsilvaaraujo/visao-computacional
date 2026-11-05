@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visão Computacional com IA Local</title>
+  <link rel="icon" href="/static/icone.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <!-- Área superior: título e estado dos componentes (RF01) -->
+  <header class="topo">
+    <div class="titulo">
+      <img src="/static/icone.svg" alt="" class="logo">
+      <div>
+        <h1>Visão Computacional com IA Local</h1>
+        <p>Bacharelado em Inteligência Artificial · UniEvangélica</p>
+      </div>
+    </div>
+    <div class="estados" aria-live="polite">
+      <span class="pilula" id="estado-camera" data-nivel="neutro"><i></i><b>Câmera</b><small>iniciando…</small></span>
+      <span class="pilula" id="estado-detector" data-nivel="neutro"><i></i><b>Detector</b><small>carregando…</small></span>
+      <span class="pilula" id="estado-llm" data-nivel="neutro"><i></i><b>IA local</b><small>verificando…</small></span>
+      <button class="botao-icone" id="abrir-monitor" title="Painel do monitor (restrito)" aria-label="Painel do monitor">⚙</button>
+    </div>
+  </header>
+
+  <!-- Mensagens de erro compreensíveis (RF13) -->
+  <div class="alerta" id="alerta" hidden>
+    <span id="alerta-texto"></span>
+    <button class="botao pequeno" id="alerta-reiniciar">Tentar novamente</button>
+  </div>
+
+  <main class="grade">
+    <!-- Painel principal: vídeo ao vivo com caixas (RF02, RF03) -->
+    <section class="palco-area">
+      <div class="palco" id="palco">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="sobreposicao"></canvas>
+        <div class="palco-msg" id="palco-msg">Iniciando a câmera…</div>
+      </div>
+      <div class="palco-barra">
+        <span class="dica">Mostre um objeto comum para a câmera · evite mostrar documentos ou dados pessoais</span>
+        <button class="botao secundario" id="pausar">⏸ Pausar demonstração</button>
+      </div>
+    </section>
+
+    <!-- Painel lateral: lista consolidada e Capturar cena (RF05, RF06) -->
+    <aside class="lateral">
+      <div class="lateral-cabecalho">
+        <h2>Objetos detectados</h2>
+        <span class="selo" id="selo-lista">Ao vivo</span>
+      </div>
+      <canvas id="foto-captura" class="foto-captura" hidden></canvas>
+      <ul class="lista-objetos" id="lista-objetos"></ul>
+      <button class="botao secundario ensinar-novo" id="ensinar-novo" hidden>➕ A IA não viu meu objeto: ensinar</button>
+      <form class="correcao" id="form-novo" hidden></form>
+      <p class="msg-aprendizado" id="msg-aprendizado" hidden></p>
+      <p class="ao-vivo-agora" id="ao-vivo-agora" hidden></p>
+      <p class="contador-aprendizado" id="contador-aprendizado" hidden></p>
+      <button class="botao primario grande" id="capturar">📸 Capturar cena</button>
+    </aside>
+
+    <!-- Área inferior: explicação, perguntas e Nova demonstração (RF07, RF08, RF11, RF16) -->
+    <section class="conversa">
+      <div class="explicacao" id="explicacao">
+        <p class="vazio" id="explicacao-vazia">Clique em <strong>Capturar cena</strong> para congelar as detecções e receber uma explicação da IA local.</p>
+        <div id="explicacao-conteudo" hidden>
+          <div class="bloco">
+            <h3>📷 Observação da câmera</h3>
+            <p id="texto-observacao"></p>
+          </div>
+          <div class="bloco" id="bloco-geral" hidden>
+            <h3>📚 Conhecimento geral</h3>
+            <p id="texto-geral"></p>
+          </div>
+          <div class="rodape-resposta" id="rodape-explicacao"></div>
+        </div>
+      </div>
+
+      <ol class="perguntas" id="perguntas"></ol>
+
+      <form class="formulario" id="formulario" autocomplete="off">
+        <div class="sugestoes" id="sugestoes">
+          <button type="button" class="chip">O que você identificou?</button>
+          <button type="button" class="chip">Para que serve este objeto?</button>
+          <button type="button" class="chip">Como a IA reconheceu isso?</button>
+          <button type="button" class="chip">Qual é a marca do objeto?</button>
+          <button type="button" class="chip">Você tem certeza?</button>
+        </div>
+        <div class="linha-pergunta">
+          <input id="pergunta" type="text" maxlength="300" placeholder="Digite uma pergunta sobre a cena capturada…" aria-label="Pergunta">
+          <button class="botao primario grande" id="perguntar" type="submit">Perguntar</button>
+          <button class="botao perigo grande" id="nova" type="button">↺ Nova demonstração</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- Mensagem persistente (seção 9) -->
+  <footer class="aviso-fixo">
+    ⚠ Resultados gerados por IA podem conter erros; esta experiência não identifica pessoas.
+    <span class="privacidade">As imagens são processadas apenas neste computador e não são gravadas.</span>
+  </footer>
+
+  <!-- Painel do monitor / responsável técnico (RF04, RF14, RF17) -->
+  <dialog id="monitor" class="monitor">
+    <div class="monitor-cabecalho">
+      <h2>Painel do monitor</h2>
+      <button class="botao-icone" id="fechar-monitor" aria-label="Fechar">✕</button>
+    </div>
+
+    <form id="form-pin" class="form-pin">
+      <label for="pin">PIN do monitor</label>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="off">
+      <button class="botao primario" type="submit">Entrar</button>
+      <p class="erro" id="erro-pin" hidden>PIN inválido.</p>
+    </form>
+
+    <div id="monitor-conteudo" hidden>
+      <section>
+        <h3>Diagnóstico</h3>
+        <div class="diag" id="diag"></div>
+      </section>
+
+      <section>
+        <h3>Câmera</h3>
+        <label>Dispositivo <select id="sel-camera"></select></label>
+        <label class="check"><input type="checkbox" id="espelhar" checked> Espelhar a prévia</label>
+      </section>
+
+      <section>
+        <h3>Detecção</h3>
+        <label>Confiança mínima: <output id="out-confianca">50%</output>
+          <input type="range" id="aj-confianca" min="0.05" max="0.95" step="0.05"></label>
+        <p class="nota">A confiança é uma estimativa do modelo, não uma certeza estatística.</p>
+        <label>Quadros consolidados (estabilidade): <output id="out-janela">8</output>
+          <input type="range" id="aj-janela" min="1" max="30" step="1"></label>
+        <label>Presença mínima na janela: <output id="out-proporcao">50%</output>
+          <input type="range" id="aj-proporcao" min="0.1" max="1" step="0.05"></label>
+        <label>FPS máximo da detecção: <output id="out-fps">12</output>
+          <input type="range" id="aj-fps" min="1" max="30" step="1"></label>
+        <label>FPS da detecção enquanto a IA responde (só quando a LLM roda na CPU): <output id="out-fps-llm">2</output>
+          <input type="range" id="aj-fps-llm" min="1" max="30" step="1"></label>
+        <p class="nota">Detector e LLM na mesma CPU disputam os núcleos e a resposta fica muito mais lenta. Com a LLM na GPU, este limite não é aplicado.</p>
+        <label class="check"><input type="checkbox" id="aj-pessoas"> Mostrar a classe “pessoa” (apenas presença, nunca identificação)</label>
+      </section>
+
+      <section>
+        <h3>Aprendizado com os visitantes</h3>
+        <label class="check"><input type="checkbox" id="aj-aprendizado"> Permitir que visitantes corrijam e ensinem a IA</label>
+        <label class="check"><input type="checkbox" id="aj-aprovacao"> Exigir aprovação do monitor antes de usar cada correção</label>
+        <label>Semelhança mínima para usar um rótulo aprendido: <output id="out-semelhanca">70%</output>
+          <input type="range" id="aj-semelhanca" min="0.3" max="0.99" step="0.01"></label>
+        <label>Confiança mínima das caixas comparadas com os exemplos: <output id="out-candidatos">15%</output>
+          <input type="range" id="aj-candidatos" min="0.05" max="0.9" step="0.05"></label>
+        <p class="nota">Cada correção guarda só vetores numéricos do recorte (nenhuma imagem). Na detecção, cada objeto é comparado com esses exemplos (vizinho mais próximo); o detector YOLO não é re-treinado.</p>
+        <ul class="lista-aprendizado" id="lista-aprendizado"></ul>
+        <div class="acoes">
+          <button class="botao" id="exportar-aprendizado">⬇ Exportar aprendizado</button>
+          <button class="botao" id="importar-aprendizado">⬆ Importar aprendizado</button>
+          <input type="file" id="arquivo-aprendizado" accept="application/json,.json" hidden>
+          <button class="botao perigo" id="esquecer-aprendizado">Esquecer tudo o que foi aprendido</button>
+        </div>
+      </section>
+
+      <section>
+        <h3>IA local</h3>
+        <label>Máximo de palavras: <output id="out-palavras">80</output>
+          <input type="range" id="aj-palavras" min="30" max="150" step="5"></label>
+        <label>Temperatura: <output id="out-temp">0.2</output>
+          <input type="range" id="aj-temp" min="0" max="1" step="0.05"></label>
+      </section>
+
+      <section class="acoes">
+        <button class="botao" id="exportar-metricas">⬇ Exportar métricas (CA10)</button>
+        <button class="botao" id="zerar-metricas">Zerar métricas</button>
+        <button class="botao" id="reiniciar-componentes">Reiniciar componentes</button>
+        <button class="botao" id="restaurar-ajustes">Restaurar padrões</button>
+        <button class="botao perigo" id="limpar-logs">Limpar logs técnicos</button>
+      </section>
+      <p class="nota" id="monitor-msg"></p>
+    </div>
+  </dialog>
+
+  <datalist id="rotulos-conhecidos"></datalist>
+  <script src="/static/app.js"></script>
+</body>
+</html>

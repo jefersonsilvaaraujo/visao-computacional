@@ -1,0 +1,12 @@
+# Complemento para notebooks com GPU NVIDIA (ex.: RTX 4050).
+# Uso: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+# Requisitos: driver NVIDIA atualizado no Windows + Docker Desktop com WSL 2.
+services:
+  ollama:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

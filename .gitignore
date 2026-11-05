@@ -1,0 +1,18 @@
+# Configurações locais (podem conter o PIN do monitor)
+.env
+
+# Arquivos gerados para levar o sistema para outro computador
+imagens.tar
+modelos.tgz
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Ferramentas locais
+.claude/
