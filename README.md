@@ -482,6 +482,16 @@ docker compose down                                                     # deslig
 
 > O documento de requisitos v1.0 deixava "aprendizagem de novas classes em tempo real" fora do escopo. O RF19 foi incluído depois, como recurso P1, e pode ser desligado no painel sem afetar o resto.
 
+### Licença deste projeto
+
+O código deste repositório é distribuído sob a **[GNU Affero General Public License v3.0 (AGPL-3.0)](LICENSE)**. Escolhemos essa licença por compatibilidade com o Ultralytics YOLO, que também é AGPL-3.0.
+
+Na prática:
+- você pode **usar, estudar, modificar e redistribuir** o projeto livremente, inclusive em aulas e outros eventos;
+- se distribuir uma versão modificada, ou disponibilizá-la para outras pessoas usarem **pela rede**, precisa publicar o código-fonte dessa versão também sob a AGPL-3.0, mantendo os créditos.
+
+Os modelos de IA usados pelo sistema têm licenças próprias, listadas abaixo.
+
 ### Licenças dos componentes
 
 Confira antes de redistribuir:
