@@ -1,10 +1,16 @@
-"""Aprendizado por exemplos (correções feitas pelos visitantes).
+"""Reconhecimento pelo CLIP e aprendizado por exemplos (correções dos visitantes).
 
-Como funciona (é um classificador k-vizinhos mais próximos, k-NN):
-1. Quando o visitante corrige um rótulo, o recorte do objeto passa por uma rede
-   pré-treinada (MobileNetV3) que o transforma em um vetor de 1280 números
-   ("embedding"). São gerados alguns vetores com pequenas variações do recorte
-   (espelhado, mais perto, mais claro…) para tolerar mudanças de posição e luz.
+O CLIP transforma cada recorte de imagem em um vetor de 512 números ("embedding").
+Esse vetor serve para duas coisas:
+
+A. Dar o nome ao objeto: ele é comparado com os vetores de TEXTO de cada objeto
+   da base (vocabulario.json); o mais parecido é o nome ("zero-shot").
+
+B. Aprender com as correções (classificador k-vizinhos mais próximos, k-NN):
+1. Quando o visitante corrige um rótulo, o recorte do objeto vira vetores do
+   CLIP: alguns com pequenas variações do recorte (espelhado, mais perto, mais
+   claro…) e, no "ensino com vários ângulos", um por quadro enquanto o
+   visitante gira o objeto.
 2. Só esses vetores e o rótulo são guardados. A imagem é descartada (RNF05).
 3. Nas próximas demonstrações, cada objeto encontrado pelo detector também vira
    um vetor. Se ele for parecido o bastante (similaridade do cosseno) com um
@@ -29,14 +35,16 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 
-from .classes_pt import ROTULOS_PT
+from .vocabulario import ROTULOS, TODOS_ROTULOS
 
 log = logging.getLogger("aprendizado")
 
-NOME_EXTRATOR = "mobilenet_v3_large-imagenet1k_v2-1280"
+NOME_EXTRATOR = "clip-vit-b-32-laion2b-512"
+DIM = 512
 TAMANHO = 224
-_MEDIA = np.array([0.485, 0.456, 0.406], dtype=np.float32)
-_DESVIO = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+_MEDIA = np.array([0.48145466, 0.4578275, 0.40821073], dtype=np.float32)  # normalização do CLIP
+_DESVIO = np.array([0.26862954, 0.26130258, 0.27577711], dtype=np.float32)
+ESCALA_CLIP = 100.0  # "temperatura" do CLIP para transformar semelhanças em probabilidades
 
 # Variações do recorte usadas ao aprender um exemplo.
 AUMENTOS = [
@@ -49,7 +57,8 @@ AUMENTOS = [
     {"brilho": 0.75},
     {"brilho": 1.25},
 ]
-MAX_EXEMPLOS = 400  # correções guardadas (cada uma com len(AUMENTOS) vetores)
+MAX_EXEMPLOS = 400  # correções guardadas
+MAX_VETORES = 40  # vetores por correção (aumentos + ângulos do ensino em rajada)
 
 
 def recortar(quadro: np.ndarray, caixa, escala: float = 1.05, desloc: float = 0.0,
@@ -69,22 +78,38 @@ def recortar(quadro: np.ndarray, caixa, escala: float = 1.05, desloc: float = 0.
     return r
 
 
-class Extrator:
-    """Transforma recortes de imagem em vetores normalizados (embeddings)."""
+def _quadrado(r: np.ndarray) -> np.ndarray:
+    """Completa o recorte até ficar quadrado (sem cortar objetos compridos, como canetas)."""
+    h, w = r.shape[:2]
+    lado = max(h, w)
+    tela = np.full((lado, lado, 3), 127, np.uint8)
+    y, x = (lado - h) // 2, (lado - w) // 2
+    tela[y:y + h, x:x + w] = r
+    return tela
 
-    def __init__(self, caminho: str, threads: int = 2):
+
+class Extrator:
+    """CLIP: transforma recortes em vetores e dá nome a eles usando a base de objetos."""
+
+    def __init__(self, caminho: str, threads: int = 2, caminho_texto: str | None = None):
         self.erro: str | None = None
         self.sessao = None
+        self.texto: np.ndarray | None = None
         try:
             if not os.path.exists(caminho):
-                raise FileNotFoundError(f"Extrator não encontrado em {caminho}")
+                raise FileNotFoundError(f"Modelo CLIP não encontrado em {caminho}")
             from .config import opcoes_onnx
 
             opcoes = opcoes_onnx(threads)
             self.sessao = ort.InferenceSession(caminho, sess_options=opcoes, providers=["CPUExecutionProvider"])
             self.entrada = self.sessao.get_inputs()[0].name
+            caminho_texto = caminho_texto or os.path.join(os.path.dirname(caminho), "clip_texto.npy")
+            texto = np.load(caminho_texto).astype(np.float32)
+            if len(texto) != len(ROTULOS):
+                raise ValueError("Vetores de texto não correspondem ao vocabulario.json; refaça o build.")
+            self.texto = texto
             self.extrair([np.zeros((64, 64, 3), np.uint8)])  # aquecimento
-            log.info("Extrator de características carregado (%s)", NOME_EXTRATOR)
+            log.info("CLIP carregado (%s, %d objetos na base)", NOME_EXTRATOR, len(ROTULOS))
         except Exception as exc:  # pragma: no cover - depende do ambiente
             self.sessao = None
             self.erro = str(exc)
@@ -97,7 +122,7 @@ class Extrator:
     def extrair(self, recortes: list[np.ndarray]) -> np.ndarray:
         lote = []
         for r in recortes:
-            img = cv2.resize(r, (TAMANHO, TAMANHO), interpolation=cv2.INTER_AREA)
+            img = cv2.resize(_quadrado(r), (TAMANHO, TAMANHO), interpolation=cv2.INTER_AREA)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
             lote.append(((img - _MEDIA) / _DESVIO).transpose(2, 0, 1))
         vetores = self.sessao.run(None, {self.entrada: np.stack(lote).astype(np.float32)})[0]
@@ -106,6 +131,15 @@ class Extrator:
 
     def extrair_com_aumentos(self, quadro: np.ndarray, caixa) -> np.ndarray:
         return self.extrair([recortar(quadro, caixa, **a) for a in AUMENTOS])
+
+    def nomear(self, vetores: np.ndarray) -> list[tuple[str, float]]:
+        """Para cada vetor, o objeto mais provável da base e sua probabilidade (0..1)."""
+        logits = ESCALA_CLIP * vetores @ self.texto.T
+        logits -= logits.max(axis=1, keepdims=True)
+        prob = np.exp(logits)
+        prob /= prob.sum(axis=1, keepdims=True)
+        idx = prob.argmax(axis=1)
+        return [(ROTULOS[int(i)], float(prob[k, i])) for k, i in enumerate(idx)]
 
 
 @dataclass
@@ -126,7 +160,7 @@ class Memoria:
         self._lock = threading.Lock()
         self.exemplos: dict[str, Exemplo] = {}
         self._vetores: dict[str, np.ndarray] = {}
-        self._matriz = np.zeros((0, 1280), np.float32)
+        self._matriz = np.zeros((0, DIM), np.float32)
         self._donos: list[str] = []
         self._carregar()
 
@@ -177,7 +211,7 @@ class Memoria:
             matriz = np.concatenate([self._vetores[i] for i in ids]).astype(np.float32)
             donos = [i for i in ids for _ in range(len(self._vetores[i]))]
         else:
-            matriz, donos = np.zeros((0, 1280), np.float32), []
+            matriz, donos = np.zeros((0, DIM), np.float32), []
         self._matriz, self._donos = matriz, donos  # troca atômica para as threads de detecção
 
     # ------------------------------------------------------------ operações
@@ -194,6 +228,25 @@ class Memoria:
             self._reconstruir()
             self._salvar()
             return e
+
+    def adicionar_vetores(self, id_: str, vetores: np.ndarray, salvar: bool = True) -> int:
+        """Acrescenta vetores a uma correção existente (ensino com vários ângulos)."""
+        with self._lock:
+            if id_ not in self.exemplos or len(vetores) == 0:
+                return 0
+            self._vetores[id_] = np.concatenate([self._vetores[id_], vetores.astype(np.float32)])[-MAX_VETORES:]
+            self._reconstruir()
+            if salvar:
+                self._salvar()
+            return len(self._vetores[id_])
+
+    def vetores_de(self, id_: str) -> np.ndarray | None:
+        v = self._vetores.get(id_)
+        return None if v is None else v.copy()
+
+    def salvar(self) -> None:
+        with self._lock:
+            self._salvar()
 
     def aprovar(self, id_: str) -> bool:
         with self._lock:
@@ -290,13 +343,13 @@ class Memoria:
                 if not ok:
                     continue
                 vet = np.frombuffer(base64.b64decode(item["vetores"]), dtype=np.float16).astype(np.float32)
-                if vet.size == 0 or vet.size % 1280:
+                if vet.size == 0 or vet.size % DIM:
                     continue
-                vet = vet.reshape(-1, 1280)
+                vet = vet.reshape(-1, DIM)
                 vet /= np.maximum(np.linalg.norm(vet, axis=1, keepdims=True), 1e-6)
                 id_ = "e" + secrets.token_hex(5)
                 original = item.get("classe_original")
-                original = original if original in ROTULOS_PT else None
+                original = original if original in TODOS_ROTULOS else None
                 self.exemplos[id_] = Exemplo(id=id_, rotulo=rotulo, classe_original=original,
                                              criado_em=str(item.get("criado_em", ""))[:16],
                                              aprovado=bool(item.get("aprovado", True)))

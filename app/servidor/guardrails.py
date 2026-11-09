@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from .classes_pt import DESCRICOES, ROTULOS_PT
+from .vocabulario import DESCRICOES, TODOS_ROTULOS
 
 TAMANHO_MAX_PERGUNTA = 300
 
@@ -211,9 +211,14 @@ def descricao_predefinida(captura: dict) -> str:
 
 
 # --- Verificação da resposta da LLM (RF10) -----------------------------------
+# Nomes de objetos que também são palavras comuns do português ("dado que…",
+# "caixa de diálogo", "chave do problema") ficam fora da verificação.
+_AMBIGUOS = {"pessoa", "dado", "caixa", "pasta", "chave", "bala", "lata", "meia", "anel", "flor", "pente",
+             "prato", "pote", "moeda", "pilha", "clipe", "cola", "sacola", "banco", "mesa", "bola", "vaso",
+             "folha de papel", "chapéu", "sapato", "laranja", "limão", "brinquedo", "relógio", "mouse"}
 _ROTULOS_VERIFICAVEIS: list[tuple[str, re.Pattern]] = []
-for _rotulo in ROTULOS_PT:
-    if _rotulo == "pessoa":
+for _rotulo in sorted(TODOS_ROTULOS):
+    if _rotulo in _AMBIGUOS:
         continue
     for _parte in _rotulo.split("/"):
         _n = normalizar(_parte)

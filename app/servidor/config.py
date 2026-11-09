@@ -17,7 +17,7 @@ OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434").rstrip("/")
 LLM_MODELO = os.getenv("LLM_MODELO", "llama3.2:3b")
 MONITOR_PIN = os.getenv("MONITOR_PIN", "2026")
 MODELO_DETECTOR = os.getenv("MODELO_DETECTOR", "/app/modelos/detector.onnx")
-MODELO_EXTRATOR = os.getenv("MODELO_EXTRATOR", "/app/modelos/extrator.onnx")
+MODELO_EXTRATOR = os.getenv("MODELO_EXTRATOR", "/app/modelos/clip_visual.onnx")
 DIR_DADOS = Path(os.getenv("DIR_DADOS", "/app/dados"))
 DIR_LOGS = Path(os.getenv("DIR_LOGS", "/app/logs"))
 BAIXAR_MODELO_AUTOMATICAMENTE = os.getenv("BAIXAR_MODELO_AUTOMATICAMENTE", "1") == "1"
@@ -73,7 +73,8 @@ def opcoes_onnx(threads: int):
 
 @dataclass
 class Ajustes:
-    confianca_minima: float = 0.50  # RF04
+    versao_esquema: int = 2  # 2 = reconhecimento com CLIP (limiares diferentes da versão 1)
+    confianca_minima: float = 0.50  # RF04: confiança mínima quando o nome vem do detector YOLO
     janela_quadros: int = 8  # RF05: quantos quadros consolidar
     proporcao_estavel: float = 0.5  # fração da janela em que o objeto precisa aparecer
     iou_nms: float = 0.45
@@ -81,11 +82,17 @@ class Ajustes:
     incluir_pessoas: bool = False  # por padrão a classe "pessoa" é ignorada (privacidade)
     max_palavras: int = 80  # RF07
     temperatura_llm: float = 0.2
+    # Reconhecimento em duas etapas: o YOLO localiza, o CLIP dá o nome (base vocabulario.json)
+    reconhecer_com_clip: bool = True
+    confianca_nome: float = 0.35  # probabilidade mínima do CLIP para usar o nome da base
+    limiar_candidatos: float = 0.05  # confiança mínima de uma caixa do YOLO para o CLIP analisar
+    max_candidatos: int = 4  # caixas analisadas pelo CLIP por quadro
+    intervalo_reconhecimento_ms: int = 500  # reaproveita o nome de uma caixa parada por este tempo
     # Aprendizado por exemplos (correções dos visitantes)
     aprendizado_ativo: bool = True
     exigir_aprovacao: bool = False  # se True, correções só valem após aprovação do monitor
-    semelhanca_minima: float = 0.70  # similaridade do cosseno para usar o rótulo aprendido
-    limiar_candidatos: float = 0.15  # confiança mínima do detector para comparar com exemplos
+    semelhanca_minima: float = 0.75  # similaridade do cosseno (CLIP) para usar o rótulo aprendido
+    quadros_ensino: int = 12  # vetores coletados no ensino com vários ângulos
     # Enquanto a LLM escreve na CPU, a detecção desacelera para não disputar os núcleos.
     fps_durante_llm: int = 2
 
@@ -101,7 +108,13 @@ class Ajustes:
         self.aprendizado_ativo = bool(self.aprendizado_ativo)
         self.exigir_aprovacao = bool(self.exigir_aprovacao)
         self.semelhanca_minima = min(max(float(self.semelhanca_minima), 0.3), 0.99)
-        self.limiar_candidatos = min(max(float(self.limiar_candidatos), 0.05), 0.9)
+        self.versao_esquema = 2
+        self.reconhecer_com_clip = bool(self.reconhecer_com_clip)
+        self.confianca_nome = min(max(float(self.confianca_nome), 0.05), 0.95)
+        self.limiar_candidatos = min(max(float(self.limiar_candidatos), 0.03), 0.9)
+        self.max_candidatos = min(max(int(self.max_candidatos), 1), 8)
+        self.intervalo_reconhecimento_ms = min(max(int(self.intervalo_reconhecimento_ms), 0), 3000)
+        self.quadros_ensino = min(max(int(self.quadros_ensino), 0), 30)
         self.fps_durante_llm = min(max(int(self.fps_durante_llm), 1), 30)
         return self
 
@@ -115,6 +128,10 @@ class GerenciadorAjustes:
     def _carregar(self) -> Ajustes:
         try:
             dados = json.loads(self._arquivo.read_text(encoding="utf-8"))
+            if dados.get("versao_esquema", 1) < 2:
+                # Limiares calibrados para o extrator antigo (MobileNetV3) não valem para o CLIP.
+                for chave in ("semelhanca_minima", "limiar_candidatos"):
+                    dados.pop(chave, None)
             nomes = {f.name for f in fields(Ajustes)}
             return Ajustes(**{k: v for k, v in dados.items() if k in nomes}).validar()
         except Exception:

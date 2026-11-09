@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Etapa 1: baixa os pesos pré-treinados (YOLO e MobileNetV3) e exporta para ONNX.
+# Etapa 1: baixa os pesos pré-treinados (YOLO e CLIP) e exporta para ONNX.
 # Só roda no build (com internet). O PyTorch não vai para a imagem final.
 # ---------------------------------------------------------------------------
 FROM python:3.11-slim AS exportador
@@ -8,10 +8,10 @@ ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --index-url https://download.pytorch.org/whl/cpu torch==2.5.1 torchvision==0.20.1 \
-    && pip install ultralytics==8.3.40 onnx==1.17.0
+    && pip install torch==2.5.1 torchvision==0.20.1 ultralytics==8.3.40 onnx==1.17.0 open_clip_torch==2.29.0
 WORKDIR /trabalho
-COPY exportar_detector.py .
-RUN mkdir -p /modelos && python exportar_detector.py ${MODELO_YOLO} /modelos/detector.onnx /modelos/extrator.onnx
+COPY exportar_detector.py vocabulario.json ./
+RUN mkdir -p /modelos && python exportar_detector.py ${MODELO_YOLO} /modelos vocabulario.json
 
 # ---------------------------------------------------------------------------
 # Etapa 2: imagem final, leve, que funciona sem internet.

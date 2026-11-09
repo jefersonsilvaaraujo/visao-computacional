@@ -123,7 +123,7 @@ def test_validar_rotulo():
 
 
 def _vet(seed):
-    v = np.random.default_rng(seed).normal(size=(8, 1280)).astype(np.float32)
+    v = np.random.default_rng(seed).normal(size=(8, 512)).astype(np.float32)
     return v / np.linalg.norm(v, axis=1, keepdims=True)
 
 
@@ -168,7 +168,9 @@ def test_observacao_aprendido_e_corrigido():
     t = g.texto_observacao(c)
     assert "exemplos ensinados por visitantes" in t and "taco de beisebol" in t
     assert "corrigiu para estojo" in t and "moderada" not in t
-    assert "ensinado por visitantes" in g.descricao_predefinida(c)
+    assert "destacar trechos" in g.descricao_predefinida(c)  # marca-texto agora está na base
+    fora_da_base = {"objetos": [{"classe": "ônibus elétrico", "confianca": 0.9, "quantidade": 1, "origem": "corrigido"}]}
+    assert "ensinado por visitantes" in g.descricao_predefinida(fora_da_base)
 
 
 def test_divisao_de_nucleos_nao_sobrepoe(monkeypatch):

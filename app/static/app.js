@@ -40,6 +40,8 @@ const estado = {
   caixasCapturadas: {},
   aprendizado: { ativo: false, objetos: 0, correcoes: 0, pendentes: 0 },
   corrigindo: false,
+  ensino: null, // ensino com vários ângulos em andamento
+  ensinoTimeout: null,
   diag: { fpsVideo: 0, fpsDeteccao: 0, inferenciaMs: 0, ultimaLlmMs: null, primeiroTokenMs: null, dispositivo: "—", aprendizado: null },
 };
 
@@ -245,6 +247,10 @@ function conectarWs() {
       estado.diag.dispositivo = m.dispositivo;
       // Com a cena congelada, só a linha "Ao vivo agora" muda (a lista e os botões ficam estáveis).
       if (estado.captura) atualizarAoVivo(); else renderizarLista();
+      if (m.ensino) atualizarEnsino(m.ensino);
+    } else if (m.tipo === "ensino") {
+      if (m.fim) finalizarEnsino(m);
+      else atualizarEnsino(m);
     } else if (m.tipo === "erro") {
       estado.aguardandoResposta = false;
       definirPilula("estado-detector", "erro", "com falha");
@@ -649,6 +655,41 @@ async function aposAprender(resp) {
   estado.historico = [];
   $("perguntas").innerHTML = "";
   renderizarLista();
+  // Ensino com vários ângulos: antes da explicação, coleta o objeto em outras posições.
+  if (!iniciarEnsino(resp)) await explicar();
+}
+
+/* Ensino com vários ângulos: os próximos quadros da câmera viram novos exemplos. */
+function iniciarEnsino(resp) {
+  const ws = estado.ws;
+  if (!resp.id || !ws || ws.readyState !== WebSocket.OPEN || estado.pausado) return false;
+  estado.ensino = { rotulo: resp.rotulo, mensagem: $("msg-aprendizado").textContent };
+  definirGerando(true);
+  $("ensino-texto").textContent = `🔄 Agora mostre o objeto “${resp.rotulo}” para a câmera e gire devagar, em vários ângulos…`;
+  $("ensino-progresso").style.width = "0";
+  $("ensino-angulos").hidden = false;
+  ws.send(JSON.stringify({ acao: "ensinar_angulos", id: resp.id }));
+  estado.ensinoTimeout = setTimeout(() => finalizarEnsino({ coletados: 0, erro: "tempo esgotado" }), 15000);
+  return true;
+}
+
+function atualizarEnsino(e) {
+  if (!estado.ensino || e.coletados == null) return;
+  $("ensino-progresso").style.width = `${Math.min(100, (100 * e.coletados) / Math.max(1, e.meta || 1))}%`;
+}
+
+async function finalizarEnsino(m) {
+  if (!estado.ensino) return;
+  clearTimeout(estado.ensinoTimeout);
+  const rotulo = estado.ensino.rotulo;
+  estado.ensino = null;
+  $("ensino-angulos").hidden = true;
+  definirGerando(false);
+  const msg = $("msg-aprendizado");
+  msg.textContent = m.coletados > 0
+    ? `✅ A IA guardou ${m.coletados} ${m.coletados === 1 ? "ângulo novo" : "ângulos novos"} de “${rotulo}”. Tire o objeto da frente da câmera e mostre de novo para testar.`
+    : `✅ Exemplo de “${rotulo}” guardado. Nenhum ângulo extra foi coletado; se quiser, corrija de novo mostrando o objeto inteiro na câmera.`;
+  msg.hidden = false;
   await explicar();
 }
 
@@ -684,6 +725,7 @@ function abrirEnsinarNovo() {
 
 /* ------------------------------------------------------------------ Nova demonstração (RF11, RB05) */
 function novaDemonstracao() {
+  if (estado.ensino) { clearTimeout(estado.ensinoTimeout); estado.ensino = null; $("ensino-angulos").hidden = true; }
   if (estado.abortar) estado.abortar.abort();
   estado.abortar = null;
   definirGerando(false);
@@ -738,8 +780,11 @@ const camposAjuste = {
   temperatura_llm: ["aj-temp", "out-temp", (v) => Number(v).toFixed(2)],
   semelhanca_minima: ["aj-semelhanca", "out-semelhanca", (v) => pct(v)],
   limiar_candidatos: ["aj-candidatos", "out-candidatos", (v) => pct(v)],
+  confianca_nome: ["aj-nome", "out-nome", (v) => pct(v)],
+  quadros_ensino: ["aj-ensino", "out-ensino", (v) => v],
 };
-const checksAjuste = { incluir_pessoas: "aj-pessoas", aprendizado_ativo: "aj-aprendizado", exigir_aprovacao: "aj-aprovacao" };
+const checksAjuste = { incluir_pessoas: "aj-pessoas", aprendizado_ativo: "aj-aprendizado", exigir_aprovacao: "aj-aprovacao",
+  reconhecer_com_clip: "aj-clip" };
 
 async function carregarAjustes() {
   const a = await (await api("/api/ajustes")).json();
@@ -825,7 +870,10 @@ async function atualizarDiagnostico() {
     caixaDiag("LLM executa em", `${s.llm.dispositivo || "—"}${s.detector.threads_llm && s.llm.dispositivo !== "GPU" ? ` (${s.detector.threads_llm} núcleos)` : ""}`),
     caixaDiag("Modelo da LLM", s.llm.modelo || "—"),
     caixaDiag("Respostas da LLM medidas", llmT ? llmT.n : 0),
-    caixaDiag("Comparação com exemplos", estado.diag.aprendizado ? `${Math.round(estado.diag.aprendizado.ms)} ms` : "— (sem exemplos)"),
+    caixaDiag("CLIP (nome + exemplos)", estado.diag.aprendizado
+      ? `${Math.round(estado.diag.aprendizado.ms)} ms · ${estado.diag.aprendizado.recalculados || 0} recortes`
+      : (s.reconhecedor && s.reconhecedor.ativo ? "—" : "desligado")),
+    caixaDiag("Base de objetos", s.reconhecedor ? `${s.reconhecedor.objetos_na_base} objetos` : "—"),
     caixaDiag("Semelhança mais alta agora", estado.diag.aprendizado && estado.diag.aprendizado.semelhanca_max != null
       ? `${pct(estado.diag.aprendizado.semelhanca_max)} (${estado.diag.aprendizado.rotulo_proximo})` : "—"),
   );
@@ -953,6 +1001,10 @@ function iniciar() {
   iniciarCamera();
   requestAnimationFrame(laco);
   window.addEventListener("beforeunload", pararCamera); // CA01: libera a câmera ao fechar
+  $("ensino-concluir").addEventListener("click", () => {
+    if (estado.ws && estado.ws.readyState === WebSocket.OPEN) estado.ws.send(JSON.stringify({ acao: "concluir_ensino" }));
+    else finalizarEnsino({ coletados: 0 });
+  });
 }
 
 iniciar();

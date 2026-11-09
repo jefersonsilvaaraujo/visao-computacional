@@ -38,6 +38,11 @@
         <video id="video" autoplay playsinline muted></video>
         <canvas id="sobreposicao"></canvas>
         <div class="palco-msg" id="palco-msg">Iniciando a câmera…</div>
+        <div class="ensino-angulos" id="ensino-angulos" hidden>
+          <p id="ensino-texto">🔄 Mostre o objeto e gire devagar, em vários ângulos…</p>
+          <div class="ensino-barra"><span id="ensino-progresso"></span></div>
+          <button class="botao aprender" id="ensino-concluir" type="button">Concluir</button>
+        </div>
       </div>
       <div class="palco-barra">
         <span class="dica">Mostre um objeto comum para a câmera · evite mostrar documentos ou dados pessoais</span>
@@ -130,10 +135,15 @@
       </section>
 
       <section>
-        <h3>Detecção</h3>
-        <label>Confiança mínima: <output id="out-confianca">50%</output>
+        <h3>Detecção e reconhecimento</h3>
+        <label class="check"><input type="checkbox" id="aj-clip"> Dar nome aos objetos com o CLIP e a base de objetos (desligue para comparar com o YOLO sozinho)</label>
+        <label>Certeza mínima do nome dado pelo CLIP: <output id="out-nome">35%</output>
+          <input type="range" id="aj-nome" min="0.05" max="0.95" step="0.05"></label>
+        <label>Confiança mínima quando o nome vem do YOLO: <output id="out-confianca">50%</output>
           <input type="range" id="aj-confianca" min="0.05" max="0.95" step="0.05"></label>
-        <p class="nota">A confiança é uma estimativa do modelo, não uma certeza estatística.</p>
+        <label>Confiança mínima das caixas que o CLIP analisa: <output id="out-candidatos">5%</output>
+          <input type="range" id="aj-candidatos" min="0.03" max="0.9" step="0.01"></label>
+        <p class="nota">O YOLO localiza as caixas; o CLIP dá o nome usando a base de objetos (app/vocabulario.json). Confiança e certeza são estimativas dos modelos, não certezas estatísticas.</p>
         <label>Quadros consolidados (estabilidade): <output id="out-janela">8</output>
           <input type="range" id="aj-janela" min="1" max="30" step="1"></label>
         <label>Presença mínima na janela: <output id="out-proporcao">50%</output>
@@ -150,11 +160,11 @@
         <h3>Aprendizado com os visitantes</h3>
         <label class="check"><input type="checkbox" id="aj-aprendizado"> Permitir que visitantes corrijam e ensinem a IA</label>
         <label class="check"><input type="checkbox" id="aj-aprovacao"> Exigir aprovação do monitor antes de usar cada correção</label>
-        <label>Semelhança mínima para usar um rótulo aprendido: <output id="out-semelhanca">70%</output>
+        <label>Semelhança mínima para usar um rótulo aprendido: <output id="out-semelhanca">75%</output>
           <input type="range" id="aj-semelhanca" min="0.3" max="0.99" step="0.01"></label>
-        <label>Confiança mínima das caixas comparadas com os exemplos: <output id="out-candidatos">15%</output>
-          <input type="range" id="aj-candidatos" min="0.05" max="0.9" step="0.05"></label>
-        <p class="nota">Cada correção guarda só vetores numéricos do recorte (nenhuma imagem). Na detecção, cada objeto é comparado com esses exemplos (vizinho mais próximo); o detector YOLO não é re-treinado.</p>
+        <label>Ângulos coletados depois de cada correção (0 = desligado): <output id="out-ensino">12</output>
+          <input type="range" id="aj-ensino" min="0" max="30" step="1"></label>
+        <p class="nota">Cada correção guarda só vetores numéricos do CLIP (nenhuma imagem): do recorte capturado e dos ângulos mostrados em seguida. Na detecção, cada objeto é comparado com esses exemplos (vizinho mais próximo); os modelos originais não são re-treinados.</p>
         <ul class="lista-aprendizado" id="lista-aprendizado"></ul>
         <div class="acoes">
           <button class="botao" id="exportar-aprendizado">⬇ Exportar aprendizado</button>

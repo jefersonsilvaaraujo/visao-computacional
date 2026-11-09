@@ -60,7 +60,7 @@ Se algo der errado, veja a [Parte 5](#parte-5--problemas-comuns-e-soluções). O
 | Espaço livre em disco | 15 GB | 20 GB |
 | Webcam | integrada ou USB | USB com boa resolução |
 | Placa de vídeo | não é obrigatória | NVIDIA (ex.: RTX 4050), que deixa as respostas da IA bem mais rápidas |
-| Internet | só na preparação, para baixar cerca de 6 GB | — |
+| Internet | só na preparação, para baixar cerca de 7 GB | — |
 | Navegador | Chrome, Edge ou Firefox atualizado | Chrome ou Edge |
 
 > **Windows:** a "virtualização" precisa estar ativada no computador. Na maioria dos notebooks ela já vem ativada. Para conferir: abra o **Gerenciador de Tarefas** (Ctrl + Shift + Esc) → aba **Desempenho** → **CPU** → deve aparecer **Virtualização: Habilitado**. Se estiver desabilitado, é preciso ativar na BIOS do computador; procure "ativar virtualização" + o modelo do seu notebook.
@@ -134,7 +134,7 @@ git clone https://github.com/jefersonsilvaaraujo/visao-computacional.git
 
 Esta etapa baixa tudo o que o sistema precisa: detector YOLO, modelo de IA de linguagem e bibliotecas. **Ela só precisa ser feita uma vez por computador.**
 
-⏱ Leva de **15 a 40 minutos**, dependendo da internet. Use uma conexão boa: são cerca de 6 GB.
+⏱ Leva de **15 a 40 minutos**, dependendo da internet. Use uma conexão boa: são cerca de 7 GB.
 
 1. Confira se o **Docker Desktop está aberto** e mostrando *Engine running*.
 2. Abra a pasta do projeto e:
@@ -187,7 +187,7 @@ Dicas para o evento:
 
 ### Roteiro com o visitante (2 a 3 minutos)
 
-1. **Mostrar um objeto** comum para a câmera (garrafa, xícara, celular, livro, mochila, tesoura, banana…). Evite documentos ou qualquer dado pessoal.
+1. **Mostrar um objeto** comum para a câmera: caneta, marca-texto, estojo, mouse, garrafa, caneca, celular, livro, tesoura, banana… São 160 objetos na [base](#ampliar-a-base-de-objetos). Evite documentos ou qualquer dado pessoal.
 2. **Observar** a caixa ao redor do objeto, com o nome em português e a **confiança** em porcentagem.
 3. Clicar em **📸 Capturar cena**. As detecções ficam "congeladas" e a IA escreve uma explicação curta em duas partes:
    - **📷 Observação da câmera**: o que o detector viu (fato);
@@ -197,7 +197,8 @@ Dicas para o evento:
 5. **Se a IA errou o nome** (por exemplo, chamou um marca-texto de "taco de beisebol"):
    - clique em **✏️ Está errado? Corrigir**, digite o nome certo e clique em **🧠 Ensinar a IA**;
    - se a IA nem encontrou o objeto, use **➕ A IA não viu meu objeto: ensinar**;
-   - tire o objeto da frente da câmera e mostre de novo: agora a caixa fica **roxa**, com o selo **aprendido**.
+   - aparece uma barra roxa sobre o vídeo: **mostre o objeto e gire devagar por alguns segundos**. A IA guarda o objeto em vários ângulos (até 12) e a barra some sozinha;
+   - tire o objeto da frente da câmera e mostre de novo, em qualquer posição: agora a caixa fica **roxa**, com o selo **aprendido**.
 6. Clicar em **↺ Nova demonstração** antes do próximo visitante. Isso apaga a explicação, as perguntas e a captura anterior.
 
 ### Botões do monitor (acadêmico que conduz a demonstração)
@@ -216,12 +217,12 @@ O painel pede um **PIN**. O padrão é **`2026`**, e é bom trocar antes do even
 |---|---|
 | **Diagnóstico** | Ver FPS do vídeo e da detecção, tempo de resposta da IA e se ela está usando **CPU** ou **GPU**. |
 | **Câmera** | Escolher outra webcam (USB) e espelhar ou não a imagem. |
-| **Detecção** | Ajustar a confiança mínima (padrão 50%), a estabilidade da lista, o FPS máximo e mostrar ou ocultar a classe "pessoa". |
-| **Aprendizado com os visitantes** | Ligar/desligar as correções, exigir aprovação do monitor, ver, aprovar ou apagar cada correção, e exportar ou importar o que foi aprendido. |
+| **Detecção e reconhecimento** | Ligar/desligar o CLIP (bom para comparar com o YOLO sozinho em aula), a *certeza mínima do nome* (padrão 35%), a confiança mínima do YOLO (padrão 50%), a estabilidade da lista, o FPS máximo e mostrar ou ocultar a classe "pessoa". |
+| **Aprendizado com os visitantes** | Ligar/desligar as correções, exigir aprovação do monitor, a semelhança mínima (padrão 75%), quantos ângulos coletar depois de cada correção, ver, aprovar ou apagar cada correção, e exportar ou importar o que foi aprendido. |
 | **IA local** | Tamanho máximo das respostas e "criatividade" (temperatura). |
 | **Ações** | Exportar métricas de desempenho, limpar logs, restaurar os ajustes padrão. |
 
-O roteiro de testes de aceitação (CA01 a CA11), com tabelas para preencher, está em [docs/roteiro-de-testes.md](docs/roteiro-de-testes.md).
+O roteiro de testes de aceitação (CA01 a CA12), com tabelas para preencher, está em [docs/roteiro-de-testes.md](docs/roteiro-de-testes.md).
 
 ---
 
@@ -232,9 +233,12 @@ O roteiro de testes de aceitação (CA01 a CA11), com tabelas para preencher, es
 ```
   NAVEGADOR (http://localhost:8080)                      DOCKER (no mesmo computador)
  ┌────────────────────────────────────┐            ┌──────────────────────────────────────┐
- │ 1. a webcam capta o vídeo          │  quadros   │ 2. DETECTOR (YOLO11n)                │
- │                                    │ ─────────▶ │    encontra objetos: classe + caixa  │
- │ 4. desenha as caixas sobre o vídeo │ ◀───────── │    + confiança                       │
+ │ 1. a webcam capta o vídeo          │  quadros   │ 2. LOCALIZADOR (YOLO11n)             │
+ │                                    │ ─────────▶ │    acha as regiões com objetos       │
+ │                                    │            │ 2b. RECONHECEDOR (CLIP)              │
+ │                                    │            │    dá o nome usando a base de 160    │
+ │                                    │            │    objetos e os exemplos ensinados   │
+ │ 4. desenha as caixas sobre o vídeo │ ◀───────── │                                      │
  │                                    │  caixas    │ 3. ESTABILIZADOR                     │
  │                                    │            │    junta vários quadros para a lista │
  │ 5. "Capturar cena"                 │  só texto  │    não ficar "piscando"              │
@@ -253,25 +257,50 @@ Pontos que valem a pena discutir com os alunos:
   ```
 
   Por isso ela não sabe cor, marca ou o que está escrito no objeto, e o sistema é programado para admitir isso.
-- **Confiança não é certeza.** "82%" é uma estimativa do modelo, não uma probabilidade garantida. Objetos fora das 80 classes que o YOLO conhece (o conjunto COCO) podem receber nomes errados, e é aí que entra o aprendizado.
+- **Confiança não é certeza.** "82%" é uma estimativa do modelo, não uma probabilidade garantida. Por isso o sistema nunca mostra 100%. Objetos fora da base podem receber nomes errados, e é aí que entra o aprendizado.
 - **Regras de segurança.** Pedidos para identificar pessoas, perguntas sobre marca ou cor e tentativas de "enganar" a IA ("ignore as instruções…") recebem respostas fixas, programadas sem passar pela IA.
 - **Por que a câmera é aberta pelo navegador?** O Docker no Windows e no Mac não consegue acessar a webcam diretamente. Então o navegador capta a imagem e manda os quadros para o detector, que roda no mesmo computador.
 - **Privacidade.** Os quadros ficam só na memória enquanto são analisados. Nada é gravado, e nada sai do computador.
+
+### Duas IAs para reconhecer: uma acha, a outra dá o nome
+
+O detector **YOLO11n** foi treinado com as **80 classes do conjunto COCO**: garrafa, celular, mouse, tesoura, livro… Caneta, marca-texto, lápis, borracha, régua, estojo, carteira e fone de ouvido **não estão lá**. Por isso, sozinho, ele chamava um marca-texto de "taco de beisebol". Mas ele costuma achar **onde** o objeto está, mesmo errando o nome.
+
+Por isso o reconhecimento tem duas etapas:
+
+1. O **YOLO localiza**: devolve caixas, inclusive as de confiança baixa (a partir de 5%).
+2. O **CLIP dá o nome**. Ele é um modelo treinado com milhões de pares imagem + legenda e transforma cada recorte em uma lista de 512 números (*embedding*). O sistema compara essa lista com as listas geradas a partir dos **nomes da base de objetos** (`app/vocabulario.json`, 160 objetos) e escolhe o mais parecido. Isso se chama classificação ***zero-shot***: o CLIP nunca foi treinado especificamente para "marca-texto", só aprendeu a relacionar imagens e textos.
+
+Medimos as duas abordagens com 160 fotos de 20 objetos do dia a dia de sala de aula:
+
+| Abordagem | Acertou o nome | Velocidade |
+|---|---|---|
+| Só o YOLO11n (versão anterior) | 18% | ~24 quadros/s |
+| Detectores de "vocabulário aberto" (YOLO-World, YOLOE) | 19% a 25% | 2 a 4 quadros/s |
+| **YOLO localiza + CLIP dá o nome (atual)** | **58%** | ~15 quadros/s |
+
+Para não pesar, o CLIP não roda em todo quadro: se uma caixa quase não se mexeu, o nome calculado há menos de 0,5 s é reaproveitado.
+
+Um bom exercício para os alunos é desligar o CLIP no painel ⚙ e comparar os nomes que aparecem.
 
 ### Como a IA "aprende" com as correções
 
 Este recurso mostra na prática que **modelos de IA erram** e que existem formas de corrigi-los sem treinar tudo de novo.
 
-1. Quando o visitante corrige um nome, o recorte do objeto passa por uma segunda rede neural já treinada (**MobileNetV3**). Ela transforma a imagem em uma lista de **1280 números**, chamada de **embedding** ou "impressão digital visual".
-2. O sistema guarda esses números e o nome correto. **A imagem é descartada.** Para tolerar mudanças de posição e luz, ele guarda 8 versões do recorte: espelhado, mais perto, mais longe, mais claro, mais escuro…
-3. A partir daí, cada objeto que aparece na câmera também vira uma lista de 1280 números, que é comparada com as guardadas (**similaridade do cosseno**).
-4. Se for parecida o bastante (padrão: **70%** de semelhança), o nome ensinado substitui o do detector e a caixa fica **roxa**.
+1. Quando o visitante corrige um nome, o recorte do objeto passa pelo **CLIP** e vira uma lista de **512 números**, o *embedding* ou "impressão digital visual".
+2. O sistema guarda esses números e o nome correto. **A imagem é descartada.** Para tolerar mudanças de luz e enquadramento, ele guarda 8 versões do recorte: espelhado, mais perto, mais longe, mais claro, mais escuro…
+3. **Ensino com vários ângulos:** logo depois da correção, o visitante gira o objeto na frente da câmera. O sistema acompanha o objeto (procura, em cada quadro, a caixa mais parecida com o que foi ensinado) e guarda até 12 ângulos diferentes, descartando os repetidos.
+4. A partir daí, cada objeto que aparece na câmera também vira uma lista de 512 números, que é comparada com as guardadas (**similaridade do cosseno**).
+5. Se for parecida o bastante (padrão: **75%** de semelhança), o nome ensinado substitui o do CLIP e do YOLO, e a caixa fica **roxa**. Os exemplos ensinados têm prioridade sobre a base.
 
-Esse método se chama **classificação por vizinho mais próximo (k-NN)**. O YOLO original **não é re-treinado**, porque isso exigiria muitas imagens e horas de processamento. O que existe é uma "memória de exemplos" ao lado dele. A explicação da IA também deixa isso claro, por exemplo: *"reconhecido como marca-texto a partir de exemplos ensinados por visitantes (semelhança de 87%; o detector original sugeriu taco de beisebol)"*.
+No teste, um marca-texto ensinado uma vez, com a coleta de ângulos, foi reconhecido em **100% dos quadros** enquanto a imagem girava 6 voltas completas. Com a versão anterior, ele se perdia com pequenas variações.
+
+Esse método se chama **classificação por vizinho mais próximo (k-NN)**. Nem o YOLO nem o CLIP são **re-treinados**, porque isso exigiria muitas imagens e horas de processamento. O que existe é uma "memória de exemplos" ao lado dele. A explicação da IA também deixa isso claro, por exemplo: *"reconhecido como marca-texto a partir de exemplos ensinados por visitantes (semelhança de 87%; o detector original sugeriu taco de beisebol)"*.
 
 **Dicas para ensinar bem:**
 - use fundo liso, boa luz e o objeto inteiro na tela;
-- ensine o mesmo objeto **2 ou 3 vezes em posições diferentes**;
+- durante a barra roxa, **gire o objeto devagar** e mostre os dois lados;
+- se ainda falhar em alguma posição, corrija de novo **nessa posição**: cada correção soma novos exemplos;
 - se o nome ensinado aparecer em objetos errados, **aumente** a semelhança mínima no painel ⚙;
 - se o objeto ensinado não for reconhecido, **diminua** a semelhança mínima.
 
@@ -288,7 +317,8 @@ O painel mostra a *semelhança mais alta agora* para ajudar a calibrar.
 
 | Componente | Onde roda | Por quê |
 |---|---|---|
-| Detector YOLO11n | processador (CPU) | é pequeno e rápido (mais de 10 quadros por segundo) |
+| Localizador YOLO11n | processador (CPU) | é pequeno e rápido (~25 ms por quadro) |
+| Reconhecedor CLIP ViT-B/32 | processador (CPU) | ~30 ms por objeto; reaproveita o nome de caixas paradas |
 | IA de linguagem Llama 3.2 3B | placa de vídeo NVIDIA, se houver; senão, CPU | é o componente mais pesado |
 
 Quando não há placa NVIDIA, os dois dividem o processador. Para um não atrasar o outro, cada um usa uma parte dos núcleos, e a detecção desacelera para 2 quadros por segundo enquanto a IA escreve. O vídeo continua fluido; só as caixas atualizam mais devagar nesse momento.
@@ -315,6 +345,26 @@ Quando não há placa NVIDIA, os dois dividem o processador. Para um não atrasa
 | `LLM_THREADS` | `0` | Núcleos para a IA quando não há placa NVIDIA (0 = automático). |
 | `FUSO_HORARIO` | `America/Sao_Paulo` | Fuso horário dos registros técnicos. |
 | `OLLAMA_VERSAO` | `0.6.8` | Versão do Ollama, o servidor da IA de linguagem. |
+
+### Ampliar a base de objetos
+
+A lista de objetos que o CLIP sabe nomear fica em **`app/vocabulario.json`**. Para incluir um objeto, acrescente um bloco como este dentro de `"objetos"`:
+
+```json
+{
+ "rotulo": "apagador",
+ "ingles": ["whiteboard eraser", "chalkboard eraser"],
+ "descricao": "Objeto usado para apagar o quadro."
+}
+```
+
+- **`rotulo`**: o nome que aparece na tela, em português.
+- **`ingles`**: um ou mais termos em inglês. O CLIP foi treinado em inglês, e termos específicos funcionam melhor ("whiteboard eraser" em vez de "eraser").
+- **`descricao`**: frase curta usada quando a IA de linguagem está indisponível.
+
+Depois de salvar, rode **`1-preparar`** de novo, com internet. Ele recalcula os vetores dos nomes, em cerca de 1 minuto se o resto já estiver baixado.
+
+> Para objetos muito específicos (o mascote da turma, um protótipo), use o botão **Corrigir** na demonstração: o ensino por exemplos funciona melhor do que um nome genérico na base.
 
 ### Usar a placa de vídeo NVIDIA (Windows)
 
@@ -391,9 +441,11 @@ Pronto: o `2-iniciar` já funciona nesse computador. Se o primeiro comando recla
 | "IA local: carregando…" por alguns segundos | Normal ao iniciar: a IA está sendo carregada na memória. |
 | "IA local indisponível" | Clique em **Tentar novamente** ou reinicie com `3-parar` + `2-iniciar`. A detecção continua funcionando, e as respostas usam textos prontos. |
 | Respostas da IA muito lentas | Veja no painel ⚙ se a IA está em **CPU** ou **GPU**. Para usar a placa NVIDIA, veja a [Parte 4](#usar-a-placa-de-vídeo-nvidia-windows). Sem placa NVIDIA, diminua o *FPS da detecção enquanto a IA responde*. |
-| O objeto não é reconhecido | Melhore a luz, aproxime o objeto e use um fundo liso. Se o objeto não estiver entre as 80 classes do COCO, ensine pelo botão **Corrigir**. |
+| O objeto não é reconhecido | Melhore a luz, aproxime o objeto e use um fundo liso. Se ele não estiver na base, [inclua na base](#ampliar-a-base-de-objetos) ou ensine pelo botão **Corrigir**. |
+| A IA dá nomes errados a coisas do fundo | Painel ⚙ → aumente a *certeza mínima do nome* (ex.: 50%) ou a *confiança mínima das caixas que o CLIP analisa* (ex.: 10%). |
+| A barra roxa do ensino termina sem coletar ângulos | O objeto precisa aparecer inteiro e próximo da câmera. Corrija de novo e mostre o objeto logo em seguida. |
 | A IA "aprendeu" um nome que aparece em objetos errados | Painel ⚙ → aumente a *semelhança mínima* ou apague a correção na lista. |
-| Detecção lenta (FPS baixo no painel) | Feche programas pesados ou reduza o *FPS máximo da detecção* no painel ⚙. |
+| Detecção lenta (FPS baixo no painel) | Feche programas pesados ou reduza o *FPS máximo da detecção* no painel ⚙. Para comparar, desligue o CLIP no painel: só o YOLO é bem mais leve. |
 
 **Ver os registros técnicos (para quem entende de terminal):**
 
@@ -413,17 +465,20 @@ visao-computacional/
 ├── docker-compose.yml          serviços "app" e "ollama"
 ├── docker-compose.gpu.yml      complemento para GPU NVIDIA
 ├── .env.example                configurações opcionais
-├── docs/roteiro-de-testes.md   critérios de aceitação CA01–CA11
+├── docs/roteiro-de-testes.md   critérios de aceitação CA01–CA12
 ├── Requisitos_Visao_Computacional_IA_Local.docx   documento de requisitos
 ├── scripts/                    funções auxiliares dos scripts
 └── app/
     ├── Dockerfile              build em 2 etapas (exporta os modelos para ONNX)
-    ├── exportar_detector.py    baixa YOLO11n e MobileNetV3 e exporta para ONNX
+    ├── vocabulario.json        base de objetos (nome em português, termos em inglês, descrição)
+    ├── exportar_detector.py    baixa YOLO11n e CLIP, exporta para ONNX e calcula os vetores dos nomes
     ├── servidor/               backend em Python (FastAPI)
     │   ├── main.py             rotas HTTP/WebSocket e orquestração
-    │   ├── detector.py         YOLO via ONNX Runtime
+    │   ├── detector.py         YOLO via ONNX Runtime (localiza as caixas)
+    │   ├── reconhecimento.py   duas etapas (YOLO + CLIP), cache por caixa, ensino com vários ângulos
+    │   ├── vocabulario.py      carrega a base de objetos
     │   ├── estabilizador.py    agregação temporal das detecções
-    │   ├── aprendizado.py      embeddings + memória k-NN das correções
+    │   ├── aprendizado.py      CLIP (embeddings e nomes) + memória k-NN das correções
     │   ├── guardrails.py       regras determinísticas da IA (RB01–RB06)
     │   ├── llm.py              cliente do Ollama e prompt do sistema
     │   ├── classes_pt.py       80 classes COCO em português
@@ -445,7 +500,8 @@ docker compose down                                                     # deslig
 ### Decisões de arquitetura
 
 - **Câmera no navegador + WebSocket**, porque o Docker Desktop (Windows/macOS) não repassa webcams para containers. O navegador só libera a câmera em `localhost` ou HTTPS.
-- **Modelos em ONNX.** O PyTorch é usado só no build. A imagem final tem cerca de 700 MB e funciona sem internet.
+- **Modelos em ONNX.** O PyTorch é usado só no build. A imagem final tem cerca de 1,4 GB e funciona sem internet.
+- **Reconhecimento em duas etapas (YOLO + CLIP zero-shot)** em vez de um detector de vocabulário aberto: nas medições, foi mais preciso (58% contra 19–25%) e 4 a 7 vezes mais rápido na CPU. Exemplos ensinados (k-NN sobre embeddings do CLIP) têm prioridade sobre a base; caixas do mesmo nome vizinhas ou contidas são unidas (ex.: tampa e corpo de um marca-texto).
 - **Segurança:** o Ollama não publica nenhuma porta; a interface é publicada só em `127.0.0.1`. Logs técnicos nunca registram perguntas, respostas ou imagens.
 - **Respostas críticas sem LLM:** cena sem objetos, perguntas sobre pessoas, marca ou cor e tentativas de *prompt injection* têm respostas determinísticas (`guardrails.py`). Depois de cada resposta da LLM, o sistema verifica se ela citou objetos que não estavam na captura.
 - **Divisão de CPU:** núcleos reservados para cada componente, ONNX Runtime sem *spin-wait* e detecção a 2 FPS enquanto a LLM gera texto na CPU. Na medição, a resposta com a câmera ligada caiu de 162 s para 2,2 s.
@@ -456,7 +512,7 @@ docker compose down                                                     # deslig
 |---|---|
 | RF01 Inicialização | Indicadores do topo + `/api/status` |
 | RF02 Captura | `getUserMedia` 640×480 no navegador, sem gravação (`static/app.js`) |
-| RF03 Detecção | YOLO11n ONNX (`servidor/detector.py`); caixas, rótulo em português e % |
+| RF03 Detecção | YOLO11n localiza + CLIP nomeia (`servidor/reconhecimento.py`); caixas, rótulo em português e % |
 | RF04 Limiar | Painel ⚙, padrão 0,50 |
 | RF05 Estabilidade | Janela temporal com histerese + NMS (`servidor/estabilizador.py`) |
 | RF06 Congelamento | **Capturar cena**: "Congelado às HH:MM:SS" + miniatura só em memória |
@@ -468,11 +524,11 @@ docker compose down                                                     # deslig
 | RF12 Offline | Modelos dentro da imagem e em volume local; nenhum recurso externo na página |
 | RF13 Erros | Mensagens específicas + **Tentar novamente** |
 | RF14 Alternar câmera | Painel ⚙ → Câmera |
-| RF15 Idioma | `servidor/classes_pt.py` |
+| RF15 Idioma | `app/vocabulario.json` (160 objetos) + `servidor/classes_pt.py` (80 classes COCO) |
 | RF16 Modo demonstração | Perguntas sugeridas |
 | RF17 Diagnóstico | Painel ⚙ (PIN) |
 | RF18 Fallback | Descrições pré-definidas quando a LLM cai |
-| RF19 Correção e aprendizado *(adicionado após a v1.0 do documento)* | **Corrigir** / **Ensinar** + memória k-NN (`servidor/aprendizado.py`) |
+| RF19 Correção e aprendizado *(adicionado após a v1.0 do documento)* | **Corrigir** / **Ensinar** + ensino com vários ângulos + memória k-NN (`servidor/aprendizado.py`, `servidor/reconhecimento.py`) |
 | RNF03 Disponibilidade | Reconexão automática da câmera e do WebSocket; `restart: unless-stopped` |
 | RNF05 Privacidade | Quadros só em memória; o aprendizado guarda só vetores numéricos |
 | RNF06 Segurança | Ollama sem porta publicada; app só em `127.0.0.1` |
@@ -500,7 +556,7 @@ Confira antes de redistribuir:
 |---|---|---|
 | Ultralytics YOLO11 (pesos e biblioteca, usados no build) | AGPL-3.0 | Distribuir software derivado exige código aberto sob AGPL ou licença comercial da Ultralytics |
 | Llama 3.2 3B | Llama 3.2 Community License + Acceptable Use Policy | Ao redistribuir, exige o aviso "Built with Llama" |
-| MobileNetV3-Large (pesos ImageNet do torchvision) | BSD-3-Clause | Pesos treinados no ImageNet: verificar os termos para uso não acadêmico |
+| OpenCLIP · CLIP ViT-B/32 (pesos LAION-2B `laion2b_s34b_b79k`) | MIT | Pesos treinados no conjunto público LAION-2B; os autores recomendam uso em pesquisa e educação |
 | Ollama · ONNX Runtime | MIT | |
 | OpenCV | Apache 2.0 | |
 | FastAPI · Uvicorn · httpx · Pydantic | MIT / BSD | |

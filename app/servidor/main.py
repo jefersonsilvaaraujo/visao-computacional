@@ -25,9 +25,10 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 from . import config, guardrails
-from .aprendizado import Extrator, Memoria, recortar
-from .classes_pt import ID_PESSOA, ROTULOS_PT
-from .detector import Deteccao, Detector, nms_por_rotulo
+from .aprendizado import Extrator, Memoria
+from .detector import Detector
+from .reconhecimento import SessaoReconhecimento, analisar
+from .vocabulario import ROTULOS, TODOS_ROTULOS
 from .estabilizador import Estabilizador
 from .llm import PREFIXO_JSON, PROMPT_SISTEMA, ServicoLLM
 from .metricas import configurar_logs, limpar_logs, metricas
@@ -40,7 +41,6 @@ detector: Detector | None = None
 extrator: Extrator | None = None
 memoria = Memoria(config.DIR_DADOS)
 llm: ServicoLLM | None = None
-MAX_CANDIDATOS = 6  # recortes comparados com a memória a cada quadro
 
 
 @asynccontextmanager
@@ -99,14 +99,14 @@ class ObjetoCaptura(BaseModel):
     @classmethod
     def classe_conhecida(cls, v: str) -> str:
         # Aceita as classes do detector e os rótulos já validados e guardados na memória.
-        if v not in ROTULOS_PT and v not in memoria.rotulos():
+        if v not in TODOS_ROTULOS and v not in memoria.rotulos():
             raise ValueError("classe desconhecida")
         return v
 
     @field_validator("classe_original")
     @classmethod
     def original_conhecida(cls, v: str | None) -> str | None:
-        return v if v in ROTULOS_PT else None
+        return v if v in TODOS_ROTULOS else None
 
     def para_contrato(self) -> dict:
         d = {"classe": self.classe, "confianca": self.confianca, "quantidade": self.quantidade}
@@ -125,7 +125,7 @@ class Captura(BaseModel):
     @field_validator("conflitos")
     @classmethod
     def conflitos_validos(cls, v: list[list[str]]) -> list[list[str]]:
-        return [par[:2] for par in v if len(par) >= 2 and all(c in ROTULOS_PT for c in par[:2])]
+        return [par[:2] for par in v if len(par) >= 2 and all(c in TODOS_ROTULOS for c in par[:2])]
 
     def contrato(self) -> dict:
         """Estrutura intermediária da seção 8 do documento de requisitos."""
@@ -187,6 +187,12 @@ async def status():
             "dispositivo": llm.dispositivo if llm else "—",
         },
         "ajustes": {"fps_max_deteccao": aj.fps_max_deteccao, "confianca_minima": aj.confianca_minima},
+        "reconhecedor": {
+            "clip": bool(extrator and extrator.pronto),
+            "ativo": aj.reconhecer_com_clip and bool(extrator and extrator.pronto),
+            "objetos_na_base": len(ROTULOS),
+            "erro": extrator.erro if extrator else None,
+        },
         "aprendizado": {
             "ativo": aj.aprendizado_ativo and bool(extrator and extrator.pronto),
             "exigir_aprovacao": aj.exigir_aprovacao,
@@ -199,7 +205,7 @@ async def status():
 @app.get("/api/rotulos")
 async def rotulos_conhecidos():
     """Sugestões para o campo de correção: classes do detector + rótulos aprendidos."""
-    return {"rotulos": sorted({r for r in ROTULOS_PT if r != "pessoa"} | memoria.rotulos())}
+    return {"rotulos": sorted({r for r in TODOS_ROTULOS if r != "pessoa"} | memoria.rotulos())}
 
 
 @app.post("/api/reiniciar-componentes")
@@ -273,6 +279,7 @@ async def apagar_logs():
 async def ws_deteccao(ws: WebSocket):
     await ws.accept()
     estab = Estabilizador()
+    sessao = SessaoReconhecimento()
     instantes: deque = deque(maxlen=30)
     ultimo_registro_fps = 0.0
     ultimo_quadro = 0.0
@@ -286,9 +293,15 @@ async def ws_deteccao(ws: WebSocket):
                     comando = json.loads(msg["text"])
                 except json.JSONDecodeError:
                     continue
-                if comando.get("acao") == "limpar":
+                acao = comando.get("acao")
+                if acao == "limpar":
                     estab.limpar()
+                    sessao.ensino = None
                     await ws.send_json({"tipo": "limpo"})
+                elif acao == "ensinar_angulos":
+                    await ws.send_json(_iniciar_ensino(sessao, str(comando.get("id", ""))))
+                elif acao == "concluir_ensino" and sessao.ensino:
+                    await ws.send_json(await asyncio.to_thread(_concluir_ensino, sessao))
                 continue
             dados = msg.get("bytes")
             if not dados or len(dados) > 3_000_000:
@@ -313,7 +326,9 @@ async def ws_deteccao(ws: WebSocket):
                 await ws.send_json({"tipo": "erro", "mensagem": "Quadro inválido recebido da câmera."})
                 continue
             try:
-                deteccoes, ms, diag = await asyncio.to_thread(analisar_quadro, quadro, aj)
+                deteccoes, ms, diag = await asyncio.to_thread(
+                    analisar, quadro, aj, detector, extrator, memoria, sessao,
+                    lambda v: metricas.registrar("reconhecimento_ms", v))
             except Exception as exc:
                 log.error("Falha na inferência: %s", exc)
                 await ws.send_json({"tipo": "erro", "mensagem": "Falha na inferência do detector."})
@@ -338,41 +353,34 @@ async def ws_deteccao(ws: WebSocket):
                 "dispositivo": detector.dispositivo,
                 "aprendizado": diag,
                 "economia": economia,
+                "ensino": sessao.estado_ensino(),
             })
+            if sessao.ensino_terminou():
+                await ws.send_json(await asyncio.to_thread(_concluir_ensino, sessao))
     except WebSocketDisconnect:
         pass
     except Exception as exc:  # pragma: no cover
         log.error("Conexão de detecção encerrada com erro: %s", exc)
 
 
-def analisar_quadro(quadro: np.ndarray, aj: config.Ajustes) -> tuple[list[Deteccao], float, dict | None]:
-    """Detector YOLO + (opcional) comparação com os exemplos ensinados pelos visitantes."""
-    usar_memoria = aj.aprendizado_ativo and memoria.tem_aprovados and extrator is not None and extrator.pronto
-    if not usar_memoria:
-        deteccoes, ms = detector.detectar(quadro, aj.confianca_minima, aj.iou_nms, aj.incluir_pessoas)
-        return deteccoes, ms, None
+def _iniciar_ensino(sessao: SessaoReconhecimento, id_: str) -> dict:
+    """Ensino com vários ângulos: os próximos quadros viram exemplos do objeto corrigido."""
+    aj = config.ajustes.atual
+    exemplo = memoria.exemplos.get(id_)
+    vetores = memoria.vetores_de(id_)
+    if not exemplo or vetores is None or aj.quadros_ensino <= 0 or not (extrator and extrator.pronto):
+        return {"tipo": "ensino", "fim": True, "coletados": 0, "erro": "Ensino com vários ângulos indisponível."}
+    sessao.iniciar_ensino(id_, exemplo.rotulo, vetores, aj.quadros_ensino)
+    log.info("Ensino com vários ângulos iniciado")
+    return {"tipo": "ensino", "inicio": True, **sessao.estado_ensino()}
 
-    # Com exemplos aprendidos, caixas de baixa confiança também viram candidatas:
-    # um objeto que o detector não conhece costuma aparecer com confiança baixa.
-    limiar = min(aj.confianca_minima, aj.limiar_candidatos)
-    deteccoes, ms = detector.detectar(quadro, limiar, aj.iou_nms, aj.incluir_pessoas)
-    candidatas = [d for d in deteccoes if d.classe_id != ID_PESSOA][:MAX_CANDIDATOS]
-    diag = {"semelhanca_max": None, "rotulo_proximo": None, "ms": 0.0}
-    if candidatas:
-        inicio = time.perf_counter()
-        vetores = extrator.extrair([recortar(quadro, d.caixa) for d in candidatas])
-        diag["ms"] = round((time.perf_counter() - inicio) * 1000, 1)
-        metricas.registrar("aprendizado_ms", diag["ms"])
-        for d, (rotulo, sim, id_) in zip(candidatas, memoria.buscar(vetores)):
-            d.semelhanca, d.rotulo_proximo = sim, rotulo
-            if diag["semelhanca_max"] is None or sim > diag["semelhanca_max"]:
-                diag["semelhanca_max"], diag["rotulo_proximo"] = round(sim, 3), rotulo
-            if rotulo and sim >= aj.semelhanca_minima:
-                d.classe_original, d.confianca_detector = d.classe, d.confianca
-                d.classe, d.confianca, d.origem = rotulo, sim, "aprendido"
-                memoria.registrar_reconhecimento(id_)
-    deteccoes = [d for d in deteccoes if d.origem == "aprendido" or d.confianca >= aj.confianca_minima]
-    return nms_por_rotulo(deteccoes, aj.iou_nms), ms, diag
+
+def _concluir_ensino(sessao: SessaoReconhecimento) -> dict:
+    e = sessao.ensino
+    sessao.ensino = None
+    total = memoria.adicionar_vetores(e.id, np.stack(e.coletados)) if e.coletados else 0
+    log.info("Ensino com vários ângulos concluído (%d novos ângulos)", len(e.coletados))
+    return {"tipo": "ensino", "fim": True, "rotulo": e.rotulo, "coletados": len(e.coletados), "total_vetores": total}
 
 
 # ----------------------------------------------------------------- captura (RF06)
@@ -556,7 +564,7 @@ async def ensinar(pedido: PedidoCorrecao):
         raise HTTPException(422, rotulo)
     if pedido.classe_original == "pessoa":
         raise HTTPException(422, "A demonstração não aprende nada sobre pessoas, apenas sobre objetos.")
-    original = pedido.classe_original if pedido.classe_original in ROTULOS_PT else None
+    original = pedido.classe_original if pedido.classe_original in TODOS_ROTULOS else None
 
     quadro = _decodificar_imagem(pedido.imagem)
     confianca_original = None

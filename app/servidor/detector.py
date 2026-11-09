@@ -32,6 +32,8 @@ class Deteccao:
     confianca_detector: float | None = None
     semelhanca: float | None = None  # similaridade com o exemplo aprendido mais próximo
     rotulo_proximo: str | None = None
+    nome_por: str = "yolo"  # quem deu o nome: "yolo" ou "clip" (base de objetos)
+    classe_detector: str | None = None  # nome sugerido pelo YOLO quando o CLIP renomeou
 
     def como_dict(self) -> dict:
         d = {
@@ -39,6 +41,7 @@ class Deteccao:
             "confianca": round(self.confianca, 3),
             "caixa": [round(v, 4) for v in self.caixa],
             "origem": self.origem,
+            "nome_por": self.nome_por,
         }
         if self.origem == "aprendido":
             d["classe_original"] = self.classe_original

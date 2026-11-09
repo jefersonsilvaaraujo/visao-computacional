@@ -15,7 +15,7 @@ from pathlib import Path
 SERIES = {
     "fps_deteccao": "FPS da detecção",
     "inferencia_ms": "Duração da inferência do detector (ms)",
-    "aprendizado_ms": "Comparação com exemplos aprendidos (ms)",
+    "reconhecimento_ms": "CLIP: nome dos objetos e comparação com exemplos (ms)",
     "llm_primeiro_token_ms": "LLM: tempo até a primeira palavra (ms)",
     "llm_total_ms": "LLM: tempo total da resposta (ms)",
 }

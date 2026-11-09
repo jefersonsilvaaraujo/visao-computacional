@@ -1,0 +1,1244 @@
+{
+ "_leia-me": "Base de objetos reconhecidos pelo CLIP. 'rotulo' é o nome exibido; 'ingles' são os termos usados pelo CLIP (em inglês); 'descricao' é usada quando a IA de linguagem está indisponível; 'coco' liga ao rótulo do detector YOLO. Depois de editar, rode 1-preparar de novo.",
+ "objetos": [
+  {
+   "rotulo": "bicicleta",
+   "ingles": [
+    "bicycle"
+   ],
+   "descricao": "Veículo de duas rodas movido a pedal, usado para transporte e lazer.",
+   "coco": "bicycle"
+  },
+  {
+   "rotulo": "carro",
+   "ingles": [
+    "car"
+   ],
+   "descricao": "Veículo motorizado de quatro rodas usado para transporte de pessoas.",
+   "coco": "car"
+  },
+  {
+   "rotulo": "motocicleta",
+   "ingles": [
+    "motorcycle"
+   ],
+   "descricao": "Veículo motorizado de duas rodas usado para transporte.",
+   "coco": "motorcycle"
+  },
+  {
+   "rotulo": "avião",
+   "ingles": [
+    "airplane"
+   ],
+   "descricao": "Aeronave usada para transporte aéreo de pessoas e cargas.",
+   "coco": "airplane"
+  },
+  {
+   "rotulo": "ônibus",
+   "ingles": [
+    "bus"
+   ],
+   "descricao": "Veículo de grande porte para transporte coletivo de passageiros.",
+   "coco": "bus"
+  },
+  {
+   "rotulo": "trem",
+   "ingles": [
+    "train"
+   ],
+   "descricao": "Veículo sobre trilhos para transporte de pessoas ou cargas.",
+   "coco": "train"
+  },
+  {
+   "rotulo": "caminhão",
+   "ingles": [
+    "truck"
+   ],
+   "descricao": "Veículo de carga usado no transporte de mercadorias.",
+   "coco": "truck"
+  },
+  {
+   "rotulo": "barco",
+   "ingles": [
+    "boat"
+   ],
+   "descricao": "Embarcação usada para navegar em rios, lagos ou no mar.",
+   "coco": "boat"
+  },
+  {
+   "rotulo": "semáforo",
+   "ingles": [
+    "traffic light"
+   ],
+   "descricao": "Sinal luminoso que organiza o trânsito de veículos e pedestres.",
+   "coco": "traffic light"
+  },
+  {
+   "rotulo": "hidrante",
+   "ingles": [
+    "fire hydrant"
+   ],
+   "descricao": "Ponto de água usado pelo corpo de bombeiros no combate a incêndios.",
+   "coco": "fire hydrant"
+  },
+  {
+   "rotulo": "placa de pare",
+   "ingles": [
+    "stop sign"
+   ],
+   "descricao": "Sinalização de trânsito que indica parada obrigatória.",
+   "coco": "stop sign"
+  },
+  {
+   "rotulo": "parquímetro",
+   "ingles": [
+    "parking meter"
+   ],
+   "descricao": "Equipamento que controla e cobra o tempo de estacionamento.",
+   "coco": "parking meter"
+  },
+  {
+   "rotulo": "banco",
+   "ingles": [
+    "bench"
+   ],
+   "descricao": "Assento comprido, comum em praças, parques e áreas de espera.",
+   "coco": "bench"
+  },
+  {
+   "rotulo": "pássaro",
+   "ingles": [
+    "bird"
+   ],
+   "descricao": "Animal com penas e bico; muitas espécies são capazes de voar.",
+   "coco": "bird"
+  },
+  {
+   "rotulo": "gato",
+   "ingles": [
+    "cat"
+   ],
+   "descricao": "Animal doméstico felino, comum como animal de estimação.",
+   "coco": "cat"
+  },
+  {
+   "rotulo": "cachorro",
+   "ingles": [
+    "dog"
+   ],
+   "descricao": "Animal doméstico canino, comum como animal de estimação.",
+   "coco": "dog"
+  },
+  {
+   "rotulo": "cavalo",
+   "ingles": [
+    "horse"
+   ],
+   "descricao": "Animal de grande porte usado em trabalho rural, esporte e lazer.",
+   "coco": "horse"
+  },
+  {
+   "rotulo": "ovelha",
+   "ingles": [
+    "sheep"
+   ],
+   "descricao": "Animal criado para produção de lã, leite e carne.",
+   "coco": "sheep"
+  },
+  {
+   "rotulo": "vaca",
+   "ingles": [
+    "cow"
+   ],
+   "descricao": "Animal criado para produção de leite e carne.",
+   "coco": "cow"
+  },
+  {
+   "rotulo": "elefante",
+   "ingles": [
+    "elephant"
+   ],
+   "descricao": "Grande mamífero com tromba, nativo da África e da Ásia.",
+   "coco": "elephant"
+  },
+  {
+   "rotulo": "urso",
+   "ingles": [
+    "bear"
+   ],
+   "descricao": "Mamífero de grande porte encontrado em florestas e regiões frias.",
+   "coco": "bear"
+  },
+  {
+   "rotulo": "zebra",
+   "ingles": [
+    "zebra"
+   ],
+   "descricao": "Mamífero africano com listras pretas e brancas.",
+   "coco": "zebra"
+  },
+  {
+   "rotulo": "girafa",
+   "ingles": [
+    "giraffe"
+   ],
+   "descricao": "Mamífero africano de pescoço longo, o animal terrestre mais alto.",
+   "coco": "giraffe"
+  },
+  {
+   "rotulo": "mochila",
+   "ingles": [
+    "backpack"
+   ],
+   "descricao": "Bolsa carregada nas costas para transportar materiais e objetos pessoais.",
+   "coco": "backpack"
+  },
+  {
+   "rotulo": "guarda-chuva",
+   "ingles": [
+    "umbrella"
+   ],
+   "descricao": "Objeto usado para proteger da chuva ou do sol.",
+   "coco": "umbrella"
+  },
+  {
+   "rotulo": "bolsa",
+   "ingles": [
+    "handbag",
+    "purse"
+   ],
+   "descricao": "Bolsa de mão usada para carregar objetos pessoais.",
+   "coco": "handbag"
+  },
+  {
+   "rotulo": "gravata",
+   "ingles": [
+    "necktie"
+   ],
+   "descricao": "Acessório de vestuário usado ao redor do pescoço em trajes formais.",
+   "coco": "tie"
+  },
+  {
+   "rotulo": "mala",
+   "ingles": [
+    "suitcase"
+   ],
+   "descricao": "Recipiente com alça usado para transportar roupas em viagens.",
+   "coco": "suitcase"
+  },
+  {
+   "rotulo": "frisbee",
+   "ingles": [
+    "frisbee"
+   ],
+   "descricao": "Disco arremessável usado em brincadeiras e esportes.",
+   "coco": "frisbee"
+  },
+  {
+   "rotulo": "esquis",
+   "ingles": [
+    "skis"
+   ],
+   "descricao": "Pranchas longas usadas para deslizar sobre a neve.",
+   "coco": "skis"
+  },
+  {
+   "rotulo": "snowboard",
+   "ingles": [
+    "snowboard"
+   ],
+   "descricao": "Prancha usada para deslizar sobre a neve.",
+   "coco": "snowboard"
+  },
+  {
+   "rotulo": "bola",
+   "ingles": [
+    "ball"
+   ],
+   "descricao": "Objeto esférico usado em diversos esportes e brincadeiras.",
+   "coco": "sports ball"
+  },
+  {
+   "rotulo": "pipa",
+   "ingles": [
+    "kite"
+   ],
+   "descricao": "Brinquedo que voa preso a uma linha, impulsionado pelo vento.",
+   "coco": "kite"
+  },
+  {
+   "rotulo": "taco de beisebol",
+   "ingles": [
+    "baseball bat"
+   ],
+   "descricao": "Bastão usado para rebater a bola no beisebol.",
+   "coco": "baseball bat"
+  },
+  {
+   "rotulo": "luva de beisebol",
+   "ingles": [
+    "baseball glove"
+   ],
+   "descricao": "Luva usada para apanhar a bola no beisebol.",
+   "coco": "baseball glove"
+  },
+  {
+   "rotulo": "skate",
+   "ingles": [
+    "skateboard"
+   ],
+   "descricao": "Prancha com rodinhas usada para lazer e esporte.",
+   "coco": "skateboard"
+  },
+  {
+   "rotulo": "prancha de surfe",
+   "ingles": [
+    "surfboard"
+   ],
+   "descricao": "Prancha usada para deslizar sobre as ondas.",
+   "coco": "surfboard"
+  },
+  {
+   "rotulo": "raquete de tênis",
+   "ingles": [
+    "tennis racket"
+   ],
+   "descricao": "Raquete usada para rebater a bola no tênis.",
+   "coco": "tennis racket"
+  },
+  {
+   "rotulo": "garrafa",
+   "ingles": [
+    "bottle",
+    "water bottle"
+   ],
+   "descricao": "Recipiente usado para armazenar e transportar líquidos.",
+   "coco": "bottle"
+  },
+  {
+   "rotulo": "taça",
+   "ingles": [
+    "wine glass"
+   ],
+   "descricao": "Copo com haste, normalmente usado para servir bebidas.",
+   "coco": "wine glass"
+  },
+  {
+   "rotulo": "copo/xícara",
+   "ingles": [
+    "cup",
+    "drinking glass"
+   ],
+   "descricao": "Recipiente usado para beber líquidos.",
+   "coco": "cup"
+  },
+  {
+   "rotulo": "garfo",
+   "ingles": [
+    "fork"
+   ],
+   "descricao": "Talher usado para espetar e levar alimentos à boca.",
+   "coco": "fork"
+  },
+  {
+   "rotulo": "faca",
+   "ingles": [
+    "kitchen knife"
+   ],
+   "descricao": "Utensílio com lâmina usado para cortar alimentos e materiais.",
+   "coco": "knife"
+  },
+  {
+   "rotulo": "colher",
+   "ingles": [
+    "spoon"
+   ],
+   "descricao": "Talher usado para comer alimentos líquidos ou pastosos.",
+   "coco": "spoon"
+  },
+  {
+   "rotulo": "tigela",
+   "ingles": [
+    "bowl"
+   ],
+   "descricao": "Recipiente fundo usado para servir alimentos.",
+   "coco": "bowl"
+  },
+  {
+   "rotulo": "banana",
+   "ingles": [
+    "banana"
+   ],
+   "descricao": "Fruta tropical rica em potássio, consumida in natura ou em receitas.",
+   "coco": "banana"
+  },
+  {
+   "rotulo": "maçã",
+   "ingles": [
+    "apple"
+   ],
+   "descricao": "Fruta consumida in natura, em sucos e em receitas.",
+   "coco": "apple"
+  },
+  {
+   "rotulo": "sanduíche",
+   "ingles": [
+    "sandwich"
+   ],
+   "descricao": "Alimento preparado com recheio entre fatias de pão.",
+   "coco": "sandwich"
+  },
+  {
+   "rotulo": "laranja",
+   "ingles": [
+    "orange"
+   ],
+   "descricao": "Fruta cítrica rica em vitamina C, comum em sucos.",
+   "coco": "orange"
+  },
+  {
+   "rotulo": "brócolis",
+   "ingles": [
+    "broccoli"
+   ],
+   "descricao": "Hortaliça verde rica em fibras e vitaminas.",
+   "coco": "broccoli"
+  },
+  {
+   "rotulo": "cenoura",
+   "ingles": [
+    "carrot"
+   ],
+   "descricao": "Raiz alaranjada consumida crua ou cozida.",
+   "coco": "carrot"
+  },
+  {
+   "rotulo": "cachorro-quente",
+   "ingles": [
+    "hot dog"
+   ],
+   "descricao": "Lanche feito com salsicha dentro de um pão.",
+   "coco": "hot dog"
+  },
+  {
+   "rotulo": "pizza",
+   "ingles": [
+    "pizza"
+   ],
+   "descricao": "Prato de massa assada com cobertura variada.",
+   "coco": "pizza"
+  },
+  {
+   "rotulo": "rosquinha",
+   "ingles": [
+    "donut"
+   ],
+   "descricao": "Doce frito em formato de anel.",
+   "coco": "donut"
+  },
+  {
+   "rotulo": "bolo",
+   "ingles": [
+    "cake"
+   ],
+   "descricao": "Doce assado, comum em comemorações.",
+   "coco": "cake"
+  },
+  {
+   "rotulo": "cadeira",
+   "ingles": [
+    "chair"
+   ],
+   "descricao": "Móvel usado para uma pessoa sentar.",
+   "coco": "chair"
+  },
+  {
+   "rotulo": "sofá",
+   "ingles": [
+    "sofa"
+   ],
+   "descricao": "Móvel estofado para várias pessoas sentarem.",
+   "coco": "couch"
+  },
+  {
+   "rotulo": "planta em vaso",
+   "ingles": [
+    "potted plant"
+   ],
+   "descricao": "Planta cultivada em vaso, usada para decoração.",
+   "coco": "potted plant"
+  },
+  {
+   "rotulo": "cama",
+   "ingles": [
+    "bed"
+   ],
+   "descricao": "Móvel usado para dormir e descansar.",
+   "coco": "bed"
+  },
+  {
+   "rotulo": "mesa",
+   "ingles": [
+    "table"
+   ],
+   "descricao": "Móvel usado para refeições e atividades de apoio.",
+   "coco": "dining table"
+  },
+  {
+   "rotulo": "vaso sanitário",
+   "ingles": [
+    "toilet"
+   ],
+   "descricao": "Peça sanitária usada para higiene pessoal.",
+   "coco": "toilet"
+  },
+  {
+   "rotulo": "televisor/monitor",
+   "ingles": [
+    "television",
+    "computer monitor"
+   ],
+   "descricao": "Aparelho com tela usado para exibir imagens e vídeos.",
+   "coco": "tv"
+  },
+  {
+   "rotulo": "notebook",
+   "ingles": [
+    "laptop computer"
+   ],
+   "descricao": "Computador portátil com tela, teclado e bateria integrados.",
+   "coco": "laptop"
+  },
+  {
+   "rotulo": "mouse",
+   "ingles": [
+    "computer mouse"
+   ],
+   "descricao": "Dispositivo usado para mover o cursor e clicar em um computador.",
+   "coco": "mouse"
+  },
+  {
+   "rotulo": "controle remoto",
+   "ingles": [
+    "remote control"
+   ],
+   "descricao": "Dispositivo usado para operar aparelhos à distância.",
+   "coco": "remote"
+  },
+  {
+   "rotulo": "teclado",
+   "ingles": [
+    "computer keyboard"
+   ],
+   "descricao": "Dispositivo com teclas usado para digitar em um computador.",
+   "coco": "keyboard"
+  },
+  {
+   "rotulo": "celular",
+   "ingles": [
+    "smartphone",
+    "cell phone"
+   ],
+   "descricao": "Aparelho portátil usado para ligações, mensagens e aplicativos.",
+   "coco": "cell phone"
+  },
+  {
+   "rotulo": "micro-ondas",
+   "ingles": [
+    "microwave"
+   ],
+   "descricao": "Eletrodoméstico que aquece alimentos por micro-ondas.",
+   "coco": "microwave"
+  },
+  {
+   "rotulo": "forno",
+   "ingles": [
+    "oven"
+   ],
+   "descricao": "Equipamento usado para assar e aquecer alimentos.",
+   "coco": "oven"
+  },
+  {
+   "rotulo": "torradeira",
+   "ingles": [
+    "toaster"
+   ],
+   "descricao": "Eletrodoméstico usado para tostar pães.",
+   "coco": "toaster"
+  },
+  {
+   "rotulo": "pia",
+   "ingles": [
+    "sink"
+   ],
+   "descricao": "Cuba com torneira usada para lavar louças ou as mãos.",
+   "coco": "sink"
+  },
+  {
+   "rotulo": "geladeira",
+   "ingles": [
+    "refrigerator"
+   ],
+   "descricao": "Eletrodoméstico que conserva alimentos em baixa temperatura.",
+   "coco": "refrigerator"
+  },
+  {
+   "rotulo": "livro",
+   "ingles": [
+    "book"
+   ],
+   "descricao": "Conjunto de páginas encadernadas usado para leitura e estudo.",
+   "coco": "book"
+  },
+  {
+   "rotulo": "relógio",
+   "ingles": [
+    "wall clock",
+    "alarm clock"
+   ],
+   "descricao": "Instrumento usado para indicar as horas.",
+   "coco": "clock"
+  },
+  {
+   "rotulo": "vaso",
+   "ingles": [
+    "vase"
+   ],
+   "descricao": "Recipiente decorativo, muitas vezes usado para flores.",
+   "coco": "vase"
+  },
+  {
+   "rotulo": "tesoura",
+   "ingles": [
+    "scissors"
+   ],
+   "descricao": "Ferramenta com duas lâminas usada para cortar papel ou tecido.",
+   "coco": "scissors"
+  },
+  {
+   "rotulo": "urso de pelúcia",
+   "ingles": [
+    "teddy bear"
+   ],
+   "descricao": "Brinquedo macio em formato de urso.",
+   "coco": "teddy bear"
+  },
+  {
+   "rotulo": "secador de cabelo",
+   "ingles": [
+    "hair dryer"
+   ],
+   "descricao": "Aparelho que sopra ar quente para secar os cabelos.",
+   "coco": "hair drier"
+  },
+  {
+   "rotulo": "escova de dentes",
+   "ingles": [
+    "toothbrush"
+   ],
+   "descricao": "Utensílio usado na higiene bucal.",
+   "coco": "toothbrush"
+  },
+  {
+   "rotulo": "caneta",
+   "ingles": [
+    "ballpoint pen",
+    "pen"
+   ],
+   "descricao": "Instrumento de escrita com tinta, usado no dia a dia para anotar e assinar."
+  },
+  {
+   "rotulo": "marca-texto",
+   "ingles": [
+    "highlighter pen",
+    "highlighter marker"
+   ],
+   "descricao": "Caneta de tinta fluorescente e translúcida, usada para destacar trechos de textos."
+  },
+  {
+   "rotulo": "pincel atômico",
+   "ingles": [
+    "permanent marker",
+    "whiteboard marker"
+   ],
+   "descricao": "Caneta de ponta grossa usada para escrever em quadros, cartazes e etiquetas."
+  },
+  {
+   "rotulo": "lápis",
+   "ingles": [
+    "pencil",
+    "wooden pencil"
+   ],
+   "descricao": "Instrumento de escrita com grafite, que pode ser apagado com borracha."
+  },
+  {
+   "rotulo": "lápis de cor",
+   "ingles": [
+    "colored pencils",
+    "crayon"
+   ],
+   "descricao": "Lápis com pigmentos coloridos, usados para desenhar e pintar."
+  },
+  {
+   "rotulo": "borracha",
+   "ingles": [
+    "eraser",
+    "rubber eraser"
+   ],
+   "descricao": "Objeto de borracha ou plástico usado para apagar marcas de lápis."
+  },
+  {
+   "rotulo": "apontador",
+   "ingles": [
+    "pencil sharpener"
+   ],
+   "descricao": "Pequeno objeto com lâmina usado para apontar lápis."
+  },
+  {
+   "rotulo": "régua",
+   "ingles": [
+    "ruler"
+   ],
+   "descricao": "Instrumento reto e graduado usado para medir e traçar linhas."
+  },
+  {
+   "rotulo": "estojo",
+   "ingles": [
+    "pencil case"
+   ],
+   "descricao": "Bolsinha ou caixa usada para guardar canetas, lápis e outros materiais escolares."
+  },
+  {
+   "rotulo": "caderno",
+   "ingles": [
+    "spiral notebook",
+    "paper notebook"
+   ],
+   "descricao": "Conjunto de folhas encadernadas usado para anotações e estudos."
+  },
+  {
+   "rotulo": "folha de papel",
+   "ingles": [
+    "sheet of paper"
+   ],
+   "descricao": "Folha usada para escrever, desenhar ou imprimir."
+  },
+  {
+   "rotulo": "pasta",
+   "ingles": [
+    "file folder",
+    "document folder"
+   ],
+   "descricao": "Objeto usado para guardar e organizar papéis e documentos."
+  },
+  {
+   "rotulo": "envelope",
+   "ingles": [
+    "envelope"
+   ],
+   "descricao": "Invólucro de papel usado para guardar e enviar cartas e documentos."
+  },
+  {
+   "rotulo": "bloco adesivo",
+   "ingles": [
+    "sticky notes",
+    "post-it notes"
+   ],
+   "descricao": "Bloco de pequenas folhas com cola, usado para recados e lembretes."
+  },
+  {
+   "rotulo": "clipe",
+   "ingles": [
+    "paper clip"
+   ],
+   "descricao": "Pequeno arame dobrado usado para prender folhas de papel."
+  },
+  {
+   "rotulo": "grampeador",
+   "ingles": [
+    "stapler"
+   ],
+   "descricao": "Ferramenta usada para prender folhas de papel com grampos."
+  },
+  {
+   "rotulo": "fita adesiva",
+   "ingles": [
+    "adhesive tape roll",
+    "scotch tape"
+   ],
+   "descricao": "Rolo de fita com cola, usado para colar e vedar."
+  },
+  {
+   "rotulo": "cola",
+   "ingles": [
+    "glue stick",
+    "glue bottle"
+   ],
+   "descricao": "Produto usado para unir papéis e outros materiais."
+  },
+  {
+   "rotulo": "calculadora",
+   "ingles": [
+    "calculator"
+   ],
+   "descricao": "Aparelho eletrônico usado para fazer cálculos matemáticos."
+  },
+  {
+   "rotulo": "pincel",
+   "ingles": [
+    "paintbrush"
+   ],
+   "descricao": "Instrumento com cerdas usado para pintar."
+  },
+  {
+   "rotulo": "quadro branco",
+   "ingles": [
+    "whiteboard"
+   ],
+   "descricao": "Superfície branca onde se escreve com pincel atômico e se apaga facilmente."
+  },
+  {
+   "rotulo": "fone de ouvido",
+   "ingles": [
+    "headphones",
+    "earphones",
+    "earbuds"
+   ],
+   "descricao": "Aparelho usado para ouvir sons sem incomodar outras pessoas."
+  },
+  {
+   "rotulo": "carregador",
+   "ingles": [
+    "phone charger",
+    "power adapter"
+   ],
+   "descricao": "Acessório que recarrega a bateria de celulares e outros aparelhos."
+  },
+  {
+   "rotulo": "cabo USB",
+   "ingles": [
+    "usb cable",
+    "charging cable"
+   ],
+   "descricao": "Cabo usado para conectar aparelhos e transferir energia ou dados."
+  },
+  {
+   "rotulo": "pendrive",
+   "ingles": [
+    "usb flash drive"
+   ],
+   "descricao": "Pequeno dispositivo usado para guardar e transportar arquivos."
+  },
+  {
+   "rotulo": "bateria portátil",
+   "ingles": [
+    "power bank"
+   ],
+   "descricao": "Bateria recarregável usada para carregar aparelhos longe da tomada."
+  },
+  {
+   "rotulo": "tablet",
+   "ingles": [
+    "tablet computer"
+   ],
+   "descricao": "Computador portátil com tela sensível ao toque e sem teclado físico."
+  },
+  {
+   "rotulo": "câmera fotográfica",
+   "ingles": [
+    "digital camera",
+    "photo camera"
+   ],
+   "descricao": "Aparelho usado para tirar fotos e gravar vídeos."
+  },
+  {
+   "rotulo": "caixa de som",
+   "ingles": [
+    "bluetooth speaker",
+    "loudspeaker"
+   ],
+   "descricao": "Aparelho que reproduz músicas e outros sons."
+  },
+  {
+   "rotulo": "microfone",
+   "ingles": [
+    "microphone"
+   ],
+   "descricao": "Aparelho que capta a voz e outros sons."
+  },
+  {
+   "rotulo": "controle de videogame",
+   "ingles": [
+    "game controller",
+    "gamepad"
+   ],
+   "descricao": "Controle usado para jogar videogame."
+  },
+  {
+   "rotulo": "relógio de pulso",
+   "ingles": [
+    "wristwatch",
+    "smartwatch"
+   ],
+   "descricao": "Relógio usado no pulso para ver as horas."
+  },
+  {
+   "rotulo": "lanterna",
+   "ingles": [
+    "flashlight"
+   ],
+   "descricao": "Aparelho portátil que produz luz."
+  },
+  {
+   "rotulo": "pilha",
+   "ingles": [
+    "battery cell",
+    "AA battery"
+   ],
+   "descricao": "Fonte de energia usada em controles, brinquedos e outros aparelhos."
+  },
+  {
+   "rotulo": "lâmpada",
+   "ingles": [
+    "light bulb"
+   ],
+   "descricao": "Objeto que produz luz a partir da eletricidade."
+  },
+  {
+   "rotulo": "luminária",
+   "ingles": [
+    "desk lamp"
+   ],
+   "descricao": "Objeto que segura uma lâmpada para iluminar um ambiente ou uma mesa."
+  },
+  {
+   "rotulo": "óculos",
+   "ingles": [
+    "eyeglasses",
+    "glasses"
+   ],
+   "descricao": "Objeto com lentes usado para corrigir a visão."
+  },
+  {
+   "rotulo": "óculos de sol",
+   "ingles": [
+    "sunglasses"
+   ],
+   "descricao": "Óculos com lentes escuras que protegem os olhos da luz do sol."
+  },
+  {
+   "rotulo": "carteira",
+   "ingles": [
+    "wallet"
+   ],
+   "descricao": "Objeto usado para guardar dinheiro e cartões."
+  },
+  {
+   "rotulo": "chave",
+   "ingles": [
+    "key",
+    "door key"
+   ],
+   "descricao": "Objeto usado para abrir fechaduras de portas, cadeados e veículos."
+  },
+  {
+   "rotulo": "chaveiro",
+   "ingles": [
+    "keychain"
+   ],
+   "descricao": "Argola ou enfeite usado para manter as chaves juntas."
+  },
+  {
+   "rotulo": "boné",
+   "ingles": [
+    "baseball cap"
+   ],
+   "descricao": "Chapéu com aba frontal, usado para proteger do sol."
+  },
+  {
+   "rotulo": "chapéu",
+   "ingles": [
+    "hat"
+   ],
+   "descricao": "Acessório usado na cabeça para proteção ou estilo."
+  },
+  {
+   "rotulo": "tênis",
+   "ingles": [
+    "sneaker",
+    "sports shoe"
+   ],
+   "descricao": "Calçado confortável usado para esportes e no dia a dia."
+  },
+  {
+   "rotulo": "sapato",
+   "ingles": [
+    "shoe"
+   ],
+   "descricao": "Calçado que protege os pés."
+  },
+  {
+   "rotulo": "meia",
+   "ingles": [
+    "sock"
+   ],
+   "descricao": "Peça de roupa usada nos pés, por baixo do calçado."
+  },
+  {
+   "rotulo": "camiseta",
+   "ingles": [
+    "t-shirt"
+   ],
+   "descricao": "Peça de roupa leve usada na parte de cima do corpo."
+  },
+  {
+   "rotulo": "casaco",
+   "ingles": [
+    "jacket",
+    "coat"
+   ],
+   "descricao": "Peça de roupa usada para proteger do frio."
+  },
+  {
+   "rotulo": "pulseira",
+   "ingles": [
+    "bracelet"
+   ],
+   "descricao": "Acessório usado no pulso como enfeite."
+  },
+  {
+   "rotulo": "anel",
+   "ingles": [
+    "ring jewelry"
+   ],
+   "descricao": "Acessório usado no dedo como enfeite."
+  },
+  {
+   "rotulo": "escova de cabelo",
+   "ingles": [
+    "hairbrush"
+   ],
+   "descricao": "Escova usada para pentear os cabelos."
+  },
+  {
+   "rotulo": "pente",
+   "ingles": [
+    "comb"
+   ],
+   "descricao": "Objeto com dentes usado para pentear os cabelos."
+  },
+  {
+   "rotulo": "perfume",
+   "ingles": [
+    "perfume bottle"
+   ],
+   "descricao": "Líquido aromático usado para deixar um cheiro agradável."
+  },
+  {
+   "rotulo": "batom",
+   "ingles": [
+    "lipstick"
+   ],
+   "descricao": "Cosmético usado para colorir os lábios."
+  },
+  {
+   "rotulo": "álcool em gel",
+   "ingles": [
+    "hand sanitizer bottle"
+   ],
+   "descricao": "Produto usado para higienizar as mãos."
+  },
+  {
+   "rotulo": "caneca",
+   "ingles": [
+    "mug",
+    "coffee mug"
+   ],
+   "descricao": "Copo com alça usado para bebidas quentes, como café e chá."
+  },
+  {
+   "rotulo": "garrafa térmica",
+   "ingles": [
+    "thermos",
+    "insulated bottle"
+   ],
+   "descricao": "Recipiente que mantém bebidas quentes ou frias por mais tempo."
+  },
+  {
+   "rotulo": "lata",
+   "ingles": [
+    "soda can",
+    "aluminum can"
+   ],
+   "descricao": "Recipiente de metal usado para bebidas e alimentos."
+  },
+  {
+   "rotulo": "prato",
+   "ingles": [
+    "plate"
+   ],
+   "descricao": "Utensílio usado para servir e comer alimentos."
+  },
+  {
+   "rotulo": "pote",
+   "ingles": [
+    "food container",
+    "plastic container"
+   ],
+   "descricao": "Recipiente com tampa usado para guardar alimentos."
+  },
+  {
+   "rotulo": "biscoito",
+   "ingles": [
+    "cookie",
+    "biscuit"
+   ],
+   "descricao": "Alimento assado, doce ou salgado, comum em lanches."
+  },
+  {
+   "rotulo": "chocolate",
+   "ingles": [
+    "chocolate bar"
+   ],
+   "descricao": "Doce feito a partir do cacau."
+  },
+  {
+   "rotulo": "bala",
+   "ingles": [
+    "candy"
+   ],
+   "descricao": "Doce pequeno, geralmente embalado individualmente."
+  },
+  {
+   "rotulo": "salgadinho",
+   "ingles": [
+    "bag of chips"
+   ],
+   "descricao": "Lanche crocante vendido em pacotes."
+  },
+  {
+   "rotulo": "limão",
+   "ingles": [
+    "lemon",
+    "lime"
+   ],
+   "descricao": "Fruta cítrica e ácida usada em sucos e temperos."
+  },
+  {
+   "rotulo": "brinquedo",
+   "ingles": [
+    "toy"
+   ],
+   "descricao": "Objeto usado para brincar e se divertir."
+  },
+  {
+   "rotulo": "cubo mágico",
+   "ingles": [
+    "rubik's cube"
+   ],
+   "descricao": "Quebra-cabeça em forma de cubo com faces coloridas."
+  },
+  {
+   "rotulo": "dado",
+   "ingles": [
+    "dice"
+   ],
+   "descricao": "Pequeno cubo com números ou pontos, usado em jogos."
+  },
+  {
+   "rotulo": "boneco",
+   "ingles": [
+    "action figure",
+    "doll"
+   ],
+   "descricao": "Brinquedo com forma de pessoa ou personagem."
+  },
+  {
+   "rotulo": "bola de futebol",
+   "ingles": [
+    "soccer ball"
+   ],
+   "descricao": "Bola usada para jogar futebol."
+  },
+  {
+   "rotulo": "caixa",
+   "ingles": [
+    "cardboard box"
+   ],
+   "descricao": "Recipiente usado para guardar ou transportar objetos."
+  },
+  {
+   "rotulo": "sacola",
+   "ingles": [
+    "shopping bag",
+    "plastic bag"
+   ],
+   "descricao": "Bolsa simples usada para carregar compras e objetos."
+  },
+  {
+   "rotulo": "moeda",
+   "ingles": [
+    "coin"
+   ],
+   "descricao": "Peça de metal usada como dinheiro."
+  },
+  {
+   "rotulo": "almofada",
+   "ingles": [
+    "cushion",
+    "pillow"
+   ],
+   "descricao": "Objeto macio usado para apoio e conforto."
+  },
+  {
+   "rotulo": "toalha",
+   "ingles": [
+    "towel"
+   ],
+   "descricao": "Tecido usado para secar o corpo ou as mãos."
+  },
+  {
+   "rotulo": "chave de fenda",
+   "ingles": [
+    "screwdriver"
+   ],
+   "descricao": "Ferramenta usada para apertar e soltar parafusos."
+  },
+  {
+   "rotulo": "martelo",
+   "ingles": [
+    "hammer"
+   ],
+   "descricao": "Ferramenta usada para pregar pregos e bater em objetos."
+  },
+  {
+   "rotulo": "alicate",
+   "ingles": [
+    "pliers"
+   ],
+   "descricao": "Ferramenta usada para segurar, dobrar e cortar fios."
+  },
+  {
+   "rotulo": "trena",
+   "ingles": [
+    "tape measure"
+   ],
+   "descricao": "Fita métrica retrátil usada para medir distâncias."
+  },
+  {
+   "rotulo": "violão",
+   "ingles": [
+    "acoustic guitar",
+    "guitar"
+   ],
+   "descricao": "Instrumento musical de cordas."
+  },
+  {
+   "rotulo": "flor",
+   "ingles": [
+    "flower"
+   ],
+   "descricao": "Parte colorida de uma planta, muito usada como enfeite."
+  }
+ ]
+}
